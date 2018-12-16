@@ -100,7 +100,7 @@ public class BufferManager {
 	
 	
 	
-	public static void flushAll() {
+	public static void flushAll() throws IOException {
 	
 		boolean pinCountZero = true;
 		for(int i = 0; i<Constants.frameCount; i++) {
@@ -112,12 +112,7 @@ public class BufferManager {
 		if(pinCountZero) {
 			for(int i = 0; i<Constants.frameCount; i++) {
 				if(bufferPool[i].getTi().getDirtyFlag() == 1) {
-					try{
-						DiskManager.writePage(bufferPool[i].getTi().getPage(), bufferPool[i].getBuffer());
-					}catch(IOException e) {
-						System.out.println("Une erreur s'est produite lors de l'écriture sur disque !");
-						System.out.println("Détails : " + e.getMessage());
-					}
+					DiskManager.writePage(bufferPool[i].getTi().getPage(), bufferPool[i].getBuffer());
 				}
 				bufferPool[i] = new BufferTable();
 			}
