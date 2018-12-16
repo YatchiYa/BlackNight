@@ -56,8 +56,10 @@ public class DBManager{
 		int slotCount = Constants.pageSize/(reconewRelDefSize+1);
 
 
-		RelDef newRelDef = new RelDef(newRelation,db.getcpt(),reconewRelDefSize,slotCount);
-
+		RelDef newRelDef = new RelDef(newRelation);
+		newRelDef.setfileIdx(db.getcpt());
+		newRelDef.setrecordSize(reconewRelDefSize);
+		newRelDef.setslotCount(slotCount);
 
 		db.AddRelation(newRelDef);
 

@@ -4,13 +4,10 @@ package shema;
 public class RelDef{
 
 	private RelDefShema relDef;
-	private int fileIdx, sizeOfRecord, count_slot;
+	private int fileIdx, recordSize, slotCount;
 	
-	public RelDef(RelDefShema relDef, int fileIdx, int sizeOfRecord, int count_slot) {
+	public RelDef(RelDefShema relDef) {
 		this.relDef = relDef;
-		this.fileIdx = fileIdx;
-		this.sizeOfRecord = sizeOfRecord;
-		this.count_slot = count_slot;
 	}
 
 	public RelDefShema getrelDef() {
@@ -21,12 +18,12 @@ public class RelDef{
 		return fileIdx;
 	}
 	
-	public int getsizeOfRecord() {
-		return sizeOfRecord;
+	public int getrecordSize() {
+		return recordSize;
 	}
 	
-	public int getcount_slot() {
-		return count_slot;
+	public int getslotCount() {
+		return slotCount;
 	}
 	
 	public void setfileIdx(int fileIdx) {
@@ -37,11 +34,11 @@ public class RelDef{
 		this.relDef = relDef;
 	}
 	
-	public void setsizeOfRecord(int sizeOfRecord) {
-		this.sizeOfRecord = sizeOfRecord;
+	public void setrecordSize(int recordSize) {
+		this.recordSize = recordSize;
 	}
 	
-	public void setcount_slot(int count_slot) {
-		this.count_slot = count_slot;
+	public void setslotCount(int slotCount) {
+		this.slotCount = slotCount;
 	}
 }

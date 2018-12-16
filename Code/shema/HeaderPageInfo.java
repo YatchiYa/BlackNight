@@ -3,66 +3,73 @@ package shema;
 import java.util.ArrayList;
 
 public class HeaderPageInfo {
-	private int nbPagesDeDonnees;
-	private ArrayList<Integer> idxPageTab;
-	private ArrayList<Integer> nbSlotsRestantDisponibles;
+	private int NbPagesDeDonnées;
+	private ArrayList<Integer> Idx_page_données;
+	private ArrayList<Integer> NbSlotsRestantDisponiblesSurLaPage;
 	
-	public HeaderPageInfo(int nbPagesDeDonnees) {
-		this.nbPagesDeDonnees = nbPagesDeDonnees;
-		idxPageTab = new ArrayList<Integer>(nbPagesDeDonnees);
-		nbSlotsRestantDisponibles = new ArrayList<Integer>(nbPagesDeDonnees);
+	public HeaderPageInfo(int NbPagesDeDonnées) {
+		this.NbPagesDeDonnées = NbPagesDeDonnées;
+		Idx_page_données = new ArrayList<Integer>(NbPagesDeDonnées);
+		NbSlotsRestantDisponiblesSurLaPage = new ArrayList<Integer>(NbPagesDeDonnées);
 	}
 	
 	public HeaderPageInfo() {
 		this(0);
 	}
 	
+	
+
+	public int getNbPagesDeDonnées() {
+		return NbPagesDeDonnées;
+	}
+
+	public void setNbPagesDeDonnées(int NbPagesDeDonnées) {
+		this.NbPagesDeDonnées = NbPagesDeDonnées;
+	}
 	public void incrementNbPage() {
-		nbPagesDeDonnees++;
-	}
-
-	public int getNbPagesDeDonnees() {
-		return nbPagesDeDonnees;
-	}
-
-	public void setNbPagesDeDonnees(int nbPagesDeDonnees) {
-		this.nbPagesDeDonnees = nbPagesDeDonnees;
-	}
-
-	public ArrayList<Integer> getIdxPageTab() {
-		return idxPageTab;
-	}
-
-	public void setIdxPageTab(ArrayList<Integer> idxPageTab) {
-		this.idxPageTab = idxPageTab;
+		NbPagesDeDonnées++;
 	}
 	
-	public void addIdxPage(Integer i) {
-		idxPageTab.add(i);
+	
+	
+	
+	
+	public ArrayList<Integer> getIdx_page_données() {
+		return Idx_page_données;
 	}
 
-	public ArrayList<Integer> getNbSlotsRestantDisponibles() {
-		return nbSlotsRestantDisponibles;
+	public void setIdx_page_données(ArrayList<Integer> Idx_page_données) {
+		this.Idx_page_données = Idx_page_données;
+	}
+	
+	public void adddx_page_données(Integer i) {
+		Idx_page_données.add(i);
 	}
 
-	public void setNbSlotsRestantDisponibles(ArrayList<Integer> nbSlotsRestantDisponibles) {
-		this.nbSlotsRestantDisponibles = nbSlotsRestantDisponibles;
+	
+	
+	public ArrayList<Integer> getNbSlotsRestantDisponiblesSurLaPage() {
+		return NbSlotsRestantDisponiblesSurLaPage;
+	}
+
+	public void setNbSlotsRestantDisponiblesSurLaPage(ArrayList<Integer> NbSlotsRestantDisponiblesSurLaPage) {
+		this.NbSlotsRestantDisponiblesSurLaPage = NbSlotsRestantDisponiblesSurLaPage;
 	}
 	
 	public void addNbSlotDispo(Integer i) {
-		nbSlotsRestantDisponibles.add(i);
+		NbSlotsRestantDisponiblesSurLaPage.add(i);
 	}
 	
-	public boolean decrementNbSlotDispo(Integer id) {
+	public boolean decrementNbSlotsRestantDisponiblesSurLaPage(Integer i) {
 		boolean find = false;
 		
-		int indice = idxPageTab.indexOf(id);
+		int indice = Idx_page_données.indexOf(i);
 		
 		if(indice!=-1) {
-			int nb = nbSlotsRestantDisponibles.get(indice).intValue();
+			int nb = NbSlotsRestantDisponiblesSurLaPage.get(indice).intValue();
 			nb--;
 			Integer newNb = new Integer(nb);
-			nbSlotsRestantDisponibles.set(indice, newNb);
+			NbSlotsRestantDisponiblesSurLaPage.set(indice, newNb);
 			find = true;
 		}
 		

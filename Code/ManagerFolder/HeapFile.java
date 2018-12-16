@@ -31,14 +31,14 @@ public class HeapFile {
 
 
 		int nbPage = buffer.getInt();
-		hfi.setNbPagesDeDonnees(nbPage);
+		hfi.setNbPagesDeDonnées(nbPage);
 
 
 		for(int i = 0; i<nbPage; i++) {
 			Integer idx = new Integer(buffer.getInt());
 			Integer nbSlot = new Integer(buffer.getInt());
 			
-			hfi.addIdxPage(idx);
+			hfi.adddx_page_données(idx);
 			hfi.addNbSlotDispo(nbSlot);
 		}
 	}
@@ -49,10 +49,10 @@ public class HeapFile {
 		ByteBuffer buffer = ByteBuffer.wrap(headerPage);
 
 
-		buffer.putInt(hfi.getNbPagesDeDonnees());
+		buffer.putInt(hfi.getNbPagesDeDonnées());
 		
-		ArrayList<Integer> idxTab = hfi.getIdxPageTab();
-		ArrayList<Integer> nbSlotTab = hfi.getNbSlotsRestantDisponibles();
+		ArrayList<Integer> idxTab = hfi.getIdx_page_données();
+		ArrayList<Integer> nbSlotTab = hfi.getNbSlotsRestantDisponiblesSurLaPage();
 
 
 		for(int i = 0; i<idxTab.size(); i++) {
@@ -89,9 +89,9 @@ public class HeapFile {
 		readHeaderPageInfo(bufferHeaderPage, hpi);
 
 		Integer idx = new Integer(newpid.getPageIdx());
-		hpi.addIdxPage(idx);
+		hpi.adddx_page_données(idx);
 
-		hpi.addNbSlotDispo(relation.getcount_slot());
+		hpi.addNbSlotDispo(relation.getslotCount());
 
 		hpi.incrementNbPage();
 		
@@ -115,7 +115,7 @@ public class HeapFile {
 
 
 		Integer idChercher = new Integer(pid.getPageIdx());
-		boolean find = hpi.decrementNbSlotDispo(idChercher);
+		boolean find = hpi.decrementNbSlotsRestantDisponiblesSurLaPage(idChercher);
 		if(!find) {
 			System.out.println("*** Erreur ! Cette page n'est pas présente ! ***\n");
 			BufferManager.freePage(headerPage, 0);
@@ -130,14 +130,14 @@ public class HeapFile {
 
 	public void readPageBitmapInfo(byte[] bufferPage, Bytemap bmpi) throws IOException {
 
-		int nbSlot = relation.getcount_slot();
+		int nbSlot = relation.getslotCount();
 		
 		ByteBuffer buffer = ByteBuffer.wrap(bufferPage);
 
 
 		for(int i = 0; i<nbSlot; i++) {
 			Byte status = new Byte(buffer.get());
-			bmpi.addSlotStatus(status);
+			bmpi.addindiceDuSlot(status);
 		}
 	}
 
@@ -146,9 +146,9 @@ public class HeapFile {
 
 
 
-		int nbSlot = relation.getcount_slot();
+		int nbSlot = relation.getslotCount();
 		
-		ArrayList<Byte> bitMap = bmpi.getSlotStatus();
+		ArrayList<Byte> bitMap = bmpi.getIndiceDuSlot();
 		
 		ByteBuffer buffer = ByteBuffer.wrap(bufferPage);
 
@@ -256,8 +256,8 @@ public class HeapFile {
 		HeaderPageInfo hpi = new HeaderPageInfo();
 		getHeaderPageInfo(hpi);
 		
-		ArrayList<Integer> idxList = hpi.getIdxPageTab();
-		ArrayList<Integer> slotDispoList = hpi.getNbSlotsRestantDisponibles();
+		ArrayList<Integer> idxList = hpi.getIdx_page_données();
+		ArrayList<Integer> slotDispoList = hpi.getNbSlotsRestantDisponiblesSurLaPage();
 		
 		for(int i = 0;i<idxList.size();i++) {
 			int idx = idxList.get(i).intValue();
@@ -278,7 +278,7 @@ public class HeapFile {
 		
 		readPageBitmapInfo(bufferPage, bitMap);
 		
-		ArrayList<Byte> slotStatus = bitMap.getSlotStatus();
+		ArrayList<Byte> slotStatus = bitMap.getIndiceDuSlot();
 
 
 		int caseIdX = slotStatus.indexOf(new Byte((byte)0));
@@ -287,8 +287,8 @@ public class HeapFile {
 			BufferManager.freePage(page, 0);
 		}
 		else {
-			int slotCount = relation.getcount_slot();
-			int recordSize = relation.getsizeOfRecord();
+			int slotCount = relation.getslotCount();
+			int recordSize = relation.getrecordSize();
 
 
 			writeRecordInBuffer(r, bufferPage, slotCount + caseIdX*recordSize);
@@ -313,14 +313,14 @@ public class HeapFile {
 	public void printAllRecords() throws IOException {
 		//on recupere la header page du heapfile
 		int fileIdHP = relation.getfileIdx();
-		int slotCount = relation.getcount_slot();
-		int recordSize = relation.getsizeOfRecord();
+		int slotCount = relation.getslotCount();
+		int recordSize = relation.getrecordSize();
 		int totalRecordPrinted = 0;
 		
 		HeaderPageInfo hpi = new HeaderPageInfo();
 		getHeaderPageInfo(hpi);
 		
-		ArrayList<Integer> listIdxPage = hpi.getIdxPageTab();
+		ArrayList<Integer> listIdxPage = hpi.getIdx_page_données();
 		
 		for(int i=0; i<listIdxPage.size(); i++) {
 			int idxPageCourante = listIdxPage.get(i).intValue();
@@ -332,7 +332,7 @@ public class HeapFile {
 			Bytemap bitmapPageCourante = new Bytemap();
 			readPageBitmapInfo(bufferPageCourante, bitmapPageCourante);
 			
-			ArrayList<Byte> slotStatusPageCourante = bitmapPageCourante.getSlotStatus();
+			ArrayList<Byte> slotStatusPageCourante = bitmapPageCourante.getIndiceDuSlot();
 			
 			for(int j = 0; j<slotStatusPageCourante.size(); j++) {
 				if(slotStatusPageCourante.get(j).byteValue() == (byte)1) {
@@ -354,15 +354,15 @@ public class HeapFile {
 	public void printAllRecordsWithFilter(int indiceColonne, String condition) throws IOException {
 
 		int fileIdHP = relation.getfileIdx();
-		int slotCount = relation.getcount_slot();
-		int recordSize = relation.getsizeOfRecord();
+		int slotCount = relation.getslotCount();
+		int recordSize = relation.getrecordSize();
 		
 		int totalRecordPrinted = 0;
 		
 		HeaderPageInfo hpi = new HeaderPageInfo();
 		getHeaderPageInfo(hpi);
 		
-		ArrayList<Integer> listIdxPage = hpi.getIdxPageTab();
+		ArrayList<Integer> listIdxPage = hpi.getIdx_page_données();
 		
 		for(int i=0; i<listIdxPage.size(); i++) {
 			int idxPageCourante = listIdxPage.get(i).intValue();
@@ -374,7 +374,7 @@ public class HeapFile {
 			Bytemap bitmapPageCourante = new Bytemap();
 			readPageBitmapInfo(bufferPageCourante, bitmapPageCourante);
 			
-			ArrayList<Byte> slotStatusPageCourante = bitmapPageCourante.getSlotStatus();
+			ArrayList<Byte> slotStatusPageCourante = bitmapPageCourante.getIndiceDuSlot();
 			
 			for(int j = 0; j<slotStatusPageCourante.size(); j++) {
 				if(slotStatusPageCourante.get(j).byteValue() == (byte)1) {
@@ -401,13 +401,13 @@ public class HeapFile {
 
 
 		int fileIdHP = relation.getfileIdx();
-		int slotCount = relation.getcount_slot();
-		int recordSize = relation.getsizeOfRecord();
+		int slotCount = relation.getslotCount();
+		int recordSize = relation.getrecordSize();
 		
 		HeaderPageInfo hpi = new HeaderPageInfo();
 		getHeaderPageInfo(hpi);
 		
-		ArrayList<Integer> listIdxPage = hpi.getIdxPageTab();
+		ArrayList<Integer> listIdxPage = hpi.getIdx_page_données();
 		
 		for(int i=0; i<listIdxPage.size(); i++) {
 			int idxPageCourante = listIdxPage.get(i).intValue();
@@ -419,7 +419,7 @@ public class HeapFile {
 			Bytemap bitmapPageCourante = new Bytemap();
 			readPageBitmapInfo(bufferPageCourante, bitmapPageCourante);
 			
-			ArrayList<Byte> slotStatusPageCourante = bitmapPageCourante.getSlotStatus();
+			ArrayList<Byte> slotStatusPageCourante = bitmapPageCourante.getIndiceDuSlot();
 			
 			for(int j = 0; j<slotStatusPageCourante.size(); j++) {
 				if(slotStatusPageCourante.get(j).byteValue() == (byte)1) {
@@ -439,8 +439,8 @@ public class HeapFile {
 	public ArrayList<Record> getAllRecordsPage(PageId page) throws IOException {
 		ArrayList<Record> listRecords = new ArrayList<Record>(0);
 	
-		int slotCount = relation.getcount_slot();
-		int recordSize = relation.getsizeOfRecord();
+		int slotCount = relation.getslotCount();
+		int recordSize = relation.getrecordSize();
 		
 		HeaderPageInfo hpi = new HeaderPageInfo();
 		getHeaderPageInfo(hpi);
@@ -451,7 +451,7 @@ public class HeapFile {
 		Bytemap bitmapPage = new Bytemap();
 		readPageBitmapInfo(bufferPage, bitmapPage);
 			
-		ArrayList<Byte> slotStatusPage = bitmapPage.getSlotStatus();
+		ArrayList<Byte> slotStatusPage = bitmapPage.getIndiceDuSlot();
 			
 		for(int j = 0; j<slotStatusPage.size(); j++) {
 			if(slotStatusPage.get(j).byteValue() == (byte)1) {
@@ -487,8 +487,8 @@ public class HeapFile {
 		HeaderPageInfo hpi2 = new HeaderPageInfo();
 		relFind2.getHeaderPageInfo(hpi2);
 		
-		ArrayList<Integer> listIdxPage1 = hpi1.getIdxPageTab();
-		ArrayList<Integer> listIdxPage2 = hpi2.getIdxPageTab();
+		ArrayList<Integer> listIdxPage1 = hpi1.getIdx_page_données();
+		ArrayList<Integer> listIdxPage2 = hpi2.getIdx_page_données();
 
 
 		for(int i=0; i<listIdxPage1.size(); i++) {

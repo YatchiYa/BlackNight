@@ -3,26 +3,34 @@ package shema;
 import java.util.ArrayList;
 
 public class Bytemap {
-	private ArrayList<Byte> slotStatus;
+	private ArrayList<Byte> indiceDuSlot;
 	
 	public Bytemap() {
-		slotStatus = new ArrayList<Byte>(0);
+		indiceDuSlot = new ArrayList<Byte>(0);
 	}
 
-	public ArrayList<Byte> getSlotStatus() {
-		return slotStatus;
+	public ArrayList<Byte> getindiceDuSlot() {
+		return indiceDuSlot;
 	}
 
-	public void setSlotStatus(ArrayList<Byte> slotStatus) {
-		this.slotStatus = slotStatus;
+	public void setindiceDuSlot(ArrayList<Byte> indiceDuSlot) {
+		this.indiceDuSlot = indiceDuSlot;
 	}
 
-	public void addSlotStatus(Byte status) {
-		slotStatus.add(status);
+	public void addindiceDuSlot(Byte i) {
+		indiceDuSlot.add(i);
 	}
 	
-	public void setStatusOccup(int indice) {
-		slotStatus.set(indice, new Byte((byte)1));
+	public void setStatusOccup(int i) {
+		indiceDuSlot.set(i, new Byte((byte)1));
+	}
+
+	public ArrayList<Byte> getIndiceDuSlot() {
+		return indiceDuSlot;
+	}
+
+	public void setIndiceDuSlot(ArrayList<Byte> indiceDuSlot) {
+		this.indiceDuSlot = indiceDuSlot;
 	}
 	
 	
