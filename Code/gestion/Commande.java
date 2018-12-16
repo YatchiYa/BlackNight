@@ -1,5 +1,7 @@
 package gestion;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,7 +15,7 @@ import constants.Constants;
 
 public class Commande {
 	
-	public static String listCommande(String c) {		
+	public static String listCommande(String c) throws IOException {		
 		String action;
 		 
 		StringTokenizer st = new StringTokenizer(c," ");
@@ -23,7 +25,12 @@ public class Commande {
 		
 		case "create":
 			System.out.println("create methode");
-			actionCreate(c);
+			Create(c);
+			System.out.print("\\");
+			System.out.println("(*-*)/");
+			
+			
+			
 			break;
 		case "insert" : inert(c);	
 			break;
@@ -32,6 +39,8 @@ public class Commande {
 		case "clean" : clean(c);	
 		break;
 		case "select" : select(c);	
+		break;
+		case "fill" : fill(c);
 		break;
 		default: 
 			System.out.println("don t know the commande ");
@@ -42,6 +51,47 @@ public class Commande {
 	}
 
 	
+
+
+	private static void fill(String command) {
+		// TODO Auto-generated method stub
+		
+		StringTokenizer commande = new StringTokenizer(command.substring(5)," ");
+		String nomRel = commande.nextToken();
+		String nomFichier = commande.nextToken();
+		
+		ArrayList<String> contenuCSV = null;
+		
+		try {
+			contenuCSV = extractContenuCSV(nomFichier);
+			try{
+				extractRecords(contenuCSV,nomRel);
+			}catch(IOException e) {
+				System.out.println("Une erreur est survenue !");
+				System.out.println("Détails : " + e.getMessage());
+			}
+		}catch(IOException e) {
+			System.out.println("Une erreur est survenue !");
+			System.out.println("Détails : " + e.getMessage());
+		}
+	}
+
+	public static ArrayList<String> extractContenuCSV(String nomFichier) throws IOException{
+		
+		ArrayList<String> contenuCSV = new ArrayList<String>();
+        try(FileReader fr = new FileReader(Constants.PATH + nomFichier);BufferedReader br = new BufferedReader(fr)){
+        	String ligne;
+        	do{
+        		ligne = br.readLine();
+        		if(ligne != null) {
+        			contenuCSV.add(ligne);
+        		}
+        	}while(ligne != null);
+        }catch(IOException e) {
+        	System.out.println("Problème de lecture : " + e.getMessage());
+        }
+        return contenuCSV;
+	}
 
 
 	public static void select(String command) {
@@ -69,7 +119,7 @@ public class Commande {
 	
 	
 	
-	public static void actionCreate(String command){
+	public static void Create(String command) throws IOException{
 		
 		RelDefShema relation = new RelDefShema();
 	

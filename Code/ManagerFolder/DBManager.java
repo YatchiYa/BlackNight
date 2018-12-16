@@ -25,8 +25,9 @@ public class DBManager{
 	/**
 	 * 
 	 * @param commande
+	 * @throws IOException 
 	 */
-	public static void processCommande(String commande) {
+	public static void processCommande(String commande) throws IOException {
 		cmd.listCommande(commande);
 		
 	}
@@ -36,8 +37,9 @@ public class DBManager{
  * @param nomRelation
  * @param nombreColonnes
  * @param typesDesColonnes
+ * @throws IOException 
  */
-	public static void createRelation(String nomRelation, int nombreColonnes, ArrayList<String> typesDesColonnes) {
+	public static void createRelation(String nomRelation, int nombreColonnes, ArrayList<String> typesDesColonnes) throws IOException {
 		RelDefShema newRelation = new RelDefShema(nomRelation, nombreColonnes);
 		newRelation.settypeDeColonne(typesDesColonnes);
 		
@@ -55,7 +57,7 @@ public class DBManager{
 
 		int slotCount = Constants.pageSize/(reconewRelDefSize+1);
 
-
+		
 		RelDef newRelDef = new RelDef(newRelation);
 		newRelDef.setfileIdx(db.getcpt());
 		newRelDef.setrecordSize(reconewRelDefSize);
@@ -65,7 +67,10 @@ public class DBManager{
 
 		db.incrCpt();
 
-
+		HeapFile heapFile = new HeapFile(newRelDef);
+		listeHeapFile.add(heapFile);
+		heapFile.createNewOnDisk();
+/*
 		try {
 			DiskManager.createFile(newRelDef.getfileIdx());
 		}catch(IOException e) {
@@ -80,9 +85,9 @@ public class DBManager{
 			heapFile.createHeader();
 		}catch(IOException e) {
 			e.printStackTrace();
-		}
+		}*/
 	}
-	
+
 	
 	
 

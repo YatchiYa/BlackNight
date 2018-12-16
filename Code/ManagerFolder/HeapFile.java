@@ -24,10 +24,35 @@ public class HeapFile {
 		this.headerPageInfo = new HeaderPageInfo();
 	}
 
-
+	public void createNewOnDisk() throws IOException {
+		
+		try {
+			DiskManager.createFile(relDef.getfileIdx());
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+		try {
+		createHeader();
+	}catch(IOException e) {
+		e.printStackTrace();
+	}
+		System.out.println("izan");
+		int fileIdx = relDef.getfileIdx();
+		PageId hp = new PageId(fileIdx, 0);
+		
+		HeaderPageInfo newHeaderPageInfo = new HeaderPageInfo();
+		byte[] bhp = BufferManager.getPage(hp);
+		this.headerPageInfo.readFromBuffer(bhp, newHeaderPageInfo);
+		BufferManager.freePage(hp, 1);
+		System.out.println("izan2");
+	}
+/*
 	public void createNewOnDisk() throws IOException {
 		DiskManager.createFile(relDef.getfileIdx());
 		DiskManager.addPage(relDef.getfileIdx());
+		
+		
+		
 		int fileIdx = relDef.getfileIdx();
 		PageId hp = new PageId(fileIdx, 0);
 		
@@ -35,10 +60,10 @@ public class HeapFile {
 		byte[] bhp = BufferManager.getPage(hp);
 		this.headerPageInfo.readFromBuffer(bhp, newHeaderPageInfo);
 		BufferManager.freePage(hp, 0);
-		
+		System.out.println("izan");
 	}
 	
-	
+*/	
 	public void createHeader() throws IOException {
 		DiskManager.addPage(relDef.getfileIdx());
 	}
@@ -87,11 +112,11 @@ public class HeapFile {
 	}
 
 
-	public void updateHeaderTakenSlot(PageId pid) throws IOException {
+	public void updateHeaderWithTakenSlot(PageId pid) throws IOException {
 
-		int fileIdHP = relDef.getfileIdx();
+		int fileIndex = relDef.getfileIdx();
 
-		PageId headerPage = new PageId(fileIdHP, 0);
+		PageId headerPage = new PageId(fileIndex, 0);
 				
 		byte[] bufferHeaderPage = BufferManager.getPage(headerPage);
 		
@@ -144,10 +169,16 @@ public class HeapFile {
 		}
 	}
 
+	 Record readRecordFromBuffer(byte[] Buffer, int SlotIdx) {
+		
+		 
+		 return null;
+		 
+	 }
 
 	public void writeRecordInBuffer(Record r, byte[] bufferPage,int offset) {
 
-		RelDefShema schema = relDef.getrelDef();
+		RelDefShema schema = relDef.getrelDef();	
 
 
 		ArrayList<String> typeCol = schema.gettypeDeColonne();
@@ -225,7 +256,7 @@ public class HeapFile {
 		r.setValue(listVal);
 	}
 	
-	public PageId addDataPage() throws IOException {
+/*	public PageId addDataPage() throws IOException {
 
 		PageId newPage = DiskManager.addPage(relDef.getfileIdx());
 		
@@ -233,27 +264,31 @@ public class HeapFile {
 		
 		return newPage;
 	}
-
+*/
 
 	public PageId getFreePageId() throws IOException {
 	
-		int idFile = relDef.getfileIdx();
+		int fileIndex = relDef.getfileIdx();
 		
-		HeaderPageInfo hpi = new HeaderPageInfo();
-		getHeaderPageInfo(hpi);
+		HeaderPageInfo headerPageInfo = new HeaderPageInfo();
+		getHeaderPageInfo(headerPageInfo);
 		
-		ArrayList<Integer> idxList = hpi.getpageIdx();
-		ArrayList<Integer> slotDispoList = hpi.getfreeSlots();
+		ArrayList<Integer> listIndex = headerPageInfo.getpageIdx();
+		ArrayList<Integer> freeSlot = headerPageInfo.getfreeSlots();
 		
-		for(int i = 0;i<idxList.size();i++) {
-			int idx = idxList.get(i).intValue();
-			int nbSlot = slotDispoList.get(i).intValue();
+		for(int i = 0;i<listIndex.size();i++) {
+			int index = listIndex.get(i).intValue();
+			int	availableSlot = freeSlot.get(i).intValue();
 			
-			if(nbSlot > 0) {
-				return new PageId(idFile, idx); 
+			if(availableSlot > 0) {
+				return new PageId(fileIndex,index); 
 			}
 		}
-		return addDataPage();
+		PageId newPage = DiskManager.addPage(relDef.getfileIdx());
+		
+		updateHeaderNewDataPage(newPage);
+		
+		return newPage;
 	}
 
 
@@ -292,7 +327,7 @@ public class HeapFile {
 		PageId pageWhereRecordSaved = getFreePageId();
 		insertRecordInPage(r, pageWhereRecordSaved);
 		
-		updateHeaderTakenSlot(pageWhereRecordSaved);
+		updateHeaderWithTakenSlot(pageWhereRecordSaved);
 	}
 
 
