@@ -21,7 +21,7 @@ public class HeapFile {
 
 
 	public void createHeader() throws IOException {
-		DiskManager.addPage(relation.getFileId());
+		DiskManager.addPage(relation.getfileIdx());
 	}
 
 
@@ -63,7 +63,7 @@ public class HeapFile {
 
 	public void getHeaderPageInfo(HeaderPageInfo hpi) throws IOException {
 
-		int fileIdHP = relation.getFileId();
+		int fileIdHP = relation.getfileIdx();
 
 		PageId headerPage = new PageId(fileIdHP, 0);
 		
@@ -78,7 +78,7 @@ public class HeapFile {
 
 	public void updateHeaderNewDataPage(PageId newpid) throws IOException {
 
-		int fileIdHP = relation.getFileId();
+		int fileIdHP = relation.getfileIdx();
 
 		PageId headerPage = new PageId(fileIdHP, 0);
 		
@@ -91,7 +91,7 @@ public class HeapFile {
 		Integer idx = new Integer(newpid.getIdX());
 		hpi.addIdxPage(idx);
 
-		hpi.addNbSlotDispo(relation.getSlotCount());
+		hpi.addNbSlotDispo(relation.getcount_slot());
 
 		hpi.incrementNbPage();
 		
@@ -103,7 +103,7 @@ public class HeapFile {
 
 	public void updateHeaderTakenSlot(PageId pid) throws IOException {
 
-		int fileIdHP = relation.getFileId();
+		int fileIdHP = relation.getfileIdx();
 
 		PageId headerPage = new PageId(fileIdHP, 0);
 				
@@ -130,7 +130,7 @@ public class HeapFile {
 
 	public void readPageBitmapInfo(byte[] bufferPage, Bytemap bmpi) throws IOException {
 
-		int nbSlot = relation.getSlotCount();
+		int nbSlot = relation.getcount_slot();
 		
 		ByteBuffer buffer = ByteBuffer.wrap(bufferPage);
 
@@ -146,7 +146,7 @@ public class HeapFile {
 
 
 
-		int nbSlot = relation.getSlotCount();
+		int nbSlot = relation.getcount_slot();
 		
 		ArrayList<Byte> bitMap = bmpi.getSlotStatus();
 		
@@ -161,10 +161,10 @@ public class HeapFile {
 
 	public void writeRecordInBuffer(Record r, byte[] bufferPage,int offset) {
 
-		RelDefShema schema = relation.getrS();
+		RelDefShema schema = relation.getrelDef();
 
 
-		ArrayList<String> typeCol = schema.getType_col();
+		ArrayList<String> typeCol = schema.gettypeDeColonne();
 
 		ArrayList<String> listVal = r.getListValues();
 		
@@ -202,9 +202,9 @@ public class HeapFile {
 	}
 
 	public void readRecordFromBuffer(Record r, byte[] bufferPage,int offset) {
-		RelDefShema schema = relation.getrS();
+		RelDefShema schema = relation.getrelDef();
 		
-		ArrayList<String> typeCol = schema.getType_col();
+		ArrayList<String> typeCol = schema.gettypeDeColonne();
 		ArrayList<String> listVal = new ArrayList<String>();
 		
 		ByteBuffer buffer = ByteBuffer.wrap(bufferPage);
@@ -241,7 +241,7 @@ public class HeapFile {
 	
 	public PageId addDataPage() throws IOException {
 
-		PageId newPage = DiskManager.addPage(relation.getFileId());
+		PageId newPage = DiskManager.addPage(relation.getfileIdx());
 		
 		updateHeaderNewDataPage(newPage);
 		
@@ -251,7 +251,7 @@ public class HeapFile {
 
 	public PageId getFreePageId() throws IOException {
 	
-		int idFile = relation.getFileId();
+		int idFile = relation.getfileIdx();
 		
 		HeaderPageInfo hpi = new HeaderPageInfo();
 		getHeaderPageInfo(hpi);
@@ -287,8 +287,8 @@ public class HeapFile {
 			BufferManager.freePage(page, 0);
 		}
 		else {
-			int slotCount = relation.getSlotCount();
-			int recordSize = relation.getRecordSize();
+			int slotCount = relation.getcount_slot();
+			int recordSize = relation.getsizeOfRecord();
 
 
 			writeRecordInBuffer(r, bufferPage, slotCount + caseIdX*recordSize);
@@ -312,9 +312,9 @@ public class HeapFile {
 
 	public void printAllRecords() throws IOException {
 		//on recupere la header page du heapfile
-		int fileIdHP = relation.getFileId();
-		int slotCount = relation.getSlotCount();
-		int recordSize = relation.getRecordSize();
+		int fileIdHP = relation.getfileIdx();
+		int slotCount = relation.getcount_slot();
+		int recordSize = relation.getsizeOfRecord();
 		int totalRecordPrinted = 0;
 		
 		HeaderPageInfo hpi = new HeaderPageInfo();
@@ -353,9 +353,9 @@ public class HeapFile {
 
 	public void printAllRecordsWithFilter(int indiceColonne, String condition) throws IOException {
 
-		int fileIdHP = relation.getFileId();
-		int slotCount = relation.getSlotCount();
-		int recordSize = relation.getRecordSize();
+		int fileIdHP = relation.getfileIdx();
+		int slotCount = relation.getcount_slot();
+		int recordSize = relation.getsizeOfRecord();
 		
 		int totalRecordPrinted = 0;
 		
@@ -400,9 +400,9 @@ public class HeapFile {
 		ArrayList<Record> listRecords = new ArrayList<Record>(0);
 
 
-		int fileIdHP = relation.getFileId();
-		int slotCount = relation.getSlotCount();
-		int recordSize = relation.getRecordSize();
+		int fileIdHP = relation.getfileIdx();
+		int slotCount = relation.getcount_slot();
+		int recordSize = relation.getsizeOfRecord();
 		
 		HeaderPageInfo hpi = new HeaderPageInfo();
 		getHeaderPageInfo(hpi);
@@ -439,8 +439,8 @@ public class HeapFile {
 	public ArrayList<Record> getAllRecordsPage(PageId page) throws IOException {
 		ArrayList<Record> listRecords = new ArrayList<Record>(0);
 	
-		int slotCount = relation.getSlotCount();
-		int recordSize = relation.getRecordSize();
+		int slotCount = relation.getcount_slot();
+		int recordSize = relation.getsizeOfRecord();
 		
 		HeaderPageInfo hpi = new HeaderPageInfo();
 		getHeaderPageInfo(hpi);
@@ -476,8 +476,8 @@ public class HeapFile {
 
 	public void join(HeapFile relFind2, int col1, int col2) throws IOException {
 
-		int fileIdHP1 = relation.getFileId();
-		int fileIdHP2 = relFind2.getRel().getFileId();
+		int fileIdHP1 = relation.getfileIdx();
+		int fileIdHP2 = relFind2.getRel().getfileIdx();
 		
 		int totalRecordPrinted = 0;
 

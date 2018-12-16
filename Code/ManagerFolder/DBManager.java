@@ -10,7 +10,6 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 import gestion.Commande;
-import index.Index;
 import shema.DBDef;
 import shema.Record;
 import shema.RelDef;
@@ -22,7 +21,6 @@ public class DBManager{
 	private static Commande cmd = new Commande();
 	private static DBDef db;
 	private static ArrayList<HeapFile> listeHeapFile;
-	private static ArrayList<Index> listeIndex;
 
 
 	public static void init() throws FileNotFoundException, IOException, ClassNotFoundException { 
@@ -39,7 +37,6 @@ public class DBManager{
 
 		refreshHeapFiles();
 
-		listeIndex = new ArrayList<Index>(0);
 	}
 
 	public static void clean() throws FileNotFoundException, ClassNotFoundException, IOException {
@@ -67,7 +64,6 @@ public class DBManager{
 		db.reset();
 
 		listeHeapFile = new ArrayList<HeapFile>(0);
-		listeIndex = new ArrayList<Index>(0);
 		
 		System.out.println("Suppression ... La base de données a été supprimée avec succès !\n");
 	}
@@ -101,7 +97,7 @@ public class DBManager{
 		boolean find = false;
 		
 		for(int i = 0;i<listRelation.size();i++) {
-			String nameRel = listRelation.get(i).getrS().getNom_rel();
+			String nameRel = listRelation.get(i).getrelDef().getnomDeRelation();
 			if(nomRelation.equals(nameRel)) {
 				relFind = listRelation.get(i);
 				find = true;
@@ -120,7 +116,7 @@ public class DBManager{
 
 	public static void createRelation(String nomRelation, int nombreColonnes, ArrayList<String> typesDesColonnes) {
 		RelDefShema nouvelle_relation = new RelDefShema(nomRelation, nombreColonnes);
-		nouvelle_relation.setType_col(typesDesColonnes);
+		nouvelle_relation.settypeDeColonne(typesDesColonnes);
 		
 		int sizeRec = 0;
 
@@ -145,7 +141,7 @@ public class DBManager{
 
 
 		try {
-			DiskManager.createFile(rd.getFileId());
+			DiskManager.createFile(rd.getfileIdx());
 		}catch(IOException e) {
 			System.out.println("*** Une ereur s'est produite lors de la création du fichier ! ***");
 			System.out.println("Détails : " + e.getMessage());
@@ -171,13 +167,6 @@ public class DBManager{
 		return listeHeapFile;
 	}
 	
-	public static ArrayList<Index> getListeIndex(){
-		return listeIndex;
-	}
-	
-	public static void addIndex(Index index) {
-		listeIndex.add(index);
-	}
 	
 	
 	public static void processCommande(String commande) {

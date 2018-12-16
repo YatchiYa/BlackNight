@@ -6,13 +6,13 @@ import java.util.ArrayList;
 
 public class DBDef implements Serializable{
 
-	private ArrayList<RelDef> l;
+	private ArrayList<RelDef> listRelDef;
 
 	private int count;
 	
 	public DBDef(int count) {
 		this.count = count;
-		l = new ArrayList<RelDef>(count);
+		listRelDef = new ArrayList<RelDef>(count);
 	}
 	
 	public DBDef() {
@@ -20,11 +20,11 @@ public class DBDef implements Serializable{
 	}
 
 	public ArrayList<RelDef> getL() {
-		return l;
+		return listRelDef;
 	}
 
 	public void setL(ArrayList<RelDef> l) {
-		this.l = l;
+		this.listRelDef = l;
 	}
 
 
@@ -32,25 +32,13 @@ public class DBDef implements Serializable{
 		return count;
 	}
 
-	/**
-	 * Modifie le compteur par un entier passé en parametre
-	 * @param count
-	 */
 	public void setCount(int count) {
 		this.count = count;
 	}
-	
-	/**
-	 * ajoute rd à la liste de relation
-	 * @param rd
-	 */
 	public void ajouterRelation(RelDef rd) {
-		l.add(rd);
+		listRelDef.add(rd);
 	}
 	
-	/**
-	 * incremente de +1 le compteur de relation
-	 */
 	public void incrementCount() {
 		this.count++;
 	}
@@ -58,6 +46,6 @@ public class DBDef implements Serializable{
 
 	public void reset() {
 		this.count = 0;
-		this.l = new ArrayList<RelDef>(0);
+		this.listRelDef = new ArrayList<RelDef>(0);
 	}
 }

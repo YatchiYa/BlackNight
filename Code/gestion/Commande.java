@@ -78,7 +78,7 @@ public class Commande {
 		}catch(IllegalArgumentException e) {
 			System.out.println("\n*** " + e.getMessage()+ " ***\n");
 		}
-		DBManager.createRelation(relation.getNom_rel(), relation.getNb_col(), relation.getType_col());
+		DBManager.createRelation(relation.getnomDeRelation(), relation.getnbDeColonne(), relation.gettypeDeColonne());
 	}
 	
 
@@ -140,9 +140,9 @@ public class Commande {
 		ArrayList<String> typeCol = new ArrayList<String>(0);
 		
 		String nom = st.nextToken();
-		relation.setNom_rel(nom);
+		relation.setnomDeRelation(nom);
 		int nbCol = Integer.parseInt(st.nextToken());
-		relation.setNb_col(nbCol);
+		relation.setnbDeColonne(nbCol);
 		while (st.hasMoreTokens()) {
 			String type = st.nextToken().toLowerCase();
 			if(type.equals("int") || type.equals("float") || type.contains("string")) {
@@ -152,7 +152,7 @@ public class Commande {
 				throw new IllegalArgumentException("Ce type n'est pas autorisé !");
 			}
 		}
-		relation.setType_col(typeCol);
+		relation.settypeDeColonne(typeCol);
 		
 		return relation;
 	}
@@ -177,7 +177,7 @@ public class Commande {
 		HeapFile relFind = null;
 		
 		for(int i =0 ;i<list.size();i++) {
-			String nomRelCourant = list.get(i).getRel().getrS().getNom_rel();
+			String nomRelCourant = list.get(i).getRel().getrelDef().getnomDeRelation();
 			HeapFile relCourant = list.get(i);
 			if(nomRelCourant.equals(nomRelation)) {
 				relFind = relCourant;

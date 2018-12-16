@@ -1,14 +1,13 @@
 package shema;
 
 public class BufferTable {
-	private static final long K = 4096;
 	
 	private Frame ti;
 	private byte[] buffer;
 	
 	public BufferTable() {
 		this.ti = new Frame();
-		this.buffer = new byte[(int)K];
+		this.buffer = new byte[(int)constants.Constants.pageSize];
 	}
 
 	public Frame getTi() {
