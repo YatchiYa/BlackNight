@@ -142,12 +142,22 @@ public class DBManager{
 		File fichier =  new File(Constants.catalogRep);
 
 
-		try(FileOutputStream fos = new FileOutputStream(fichier);ObjectOutputStream oos =  new ObjectOutputStream(fos);){
-
-			oos.writeObject(db);
+		try{
+				FileOutputStream fos = new FileOutputStream(fichier);
+				ObjectOutputStream oos =  new ObjectOutputStream(fos);
+				oos.writeObject(db);
 		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+		
 		BufferManager.flushAll();
 	}
+	
+	
+	
+	
+	
 	
 	public static void insert(String nomRelation,ArrayList<String> listValeurs) throws IOException {
 		Record r = new Record();

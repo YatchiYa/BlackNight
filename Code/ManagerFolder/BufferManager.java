@@ -51,8 +51,6 @@ public class BufferManager {
 		}
 		
 		// a faire une fonction secondaire pour alléger la fonction principale
-
-			
 			return lruSystem(iPageId);
 		
 	}
@@ -97,15 +95,19 @@ public class BufferManager {
 	
 	
 	
-	public static void freePage(PageId page,int isDirty) {
+	public static void freePage(PageId iPageId,int iIsDirty) {
 		for(int i = 0;i<Constants.frameCount;i++) {
-			if(page.equals(bufferPool[i].getframe().getPage())) {
+			
+			if(iPageId.equals(bufferPool[i].getframe().getPage())) {
 				bufferPool[i].getframe().decrementpincount();
+				
 				if(bufferPool[i].getframe().getpincount() == 0) {
+					
 					bufferPool[i].getframe().setpincoutInitial(new Date());
 				}
-				if(isDirty == 1) {
-					bufferPool[i].getframe().setflagDirty(isDirty);
+				if(iIsDirty == 1) {
+					
+					bufferPool[i].getframe().setflagDirty(iIsDirty);
 				}
 			}
 		}
@@ -117,14 +119,14 @@ public class BufferManager {
 	
 	public static void flushAll() throws IOException {
 	
-		boolean pinCountZero = true;
+		boolean checkSum = true;
 		for(int i = 0; i<Constants.frameCount; i++) {
 			if(bufferPool[i].getframe().getpincount() != 0) {
-				pinCountZero = false;
+				checkSum = false;
 			}
 		}
 		
-		if(pinCountZero) {
+		if(checkSum) {
 			for(int i = 0; i<Constants.frameCount; i++) {
 				if(bufferPool[i].getframe().getflagDirty() == 1) {
 					DiskManager.writePage(bufferPool[i].getframe().getPage(), bufferPool[i].getBuffer());
@@ -137,7 +139,13 @@ public class BufferManager {
 		}
 	}
 	
+	
+	
 	public static BufferTable[] getBufferPool() {
 		return bufferPool;
+	}
+
+	public static void setBufferPool(BufferTable[] bufferPool) {
+		BufferManager.bufferPool = bufferPool;
 	}
 }
