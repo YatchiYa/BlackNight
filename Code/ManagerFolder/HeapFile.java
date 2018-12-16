@@ -61,7 +61,7 @@ public class HeapFile {
 
 		hpi.addNbSlotDispo(relation.getslotCount());
 
-		hpi.incrementNbPage();
+		hpi.incrementnombreDePage();
 		
 		this.headerPageInfo.writeToBuffer(bufferHeaderPage, hpi);
 

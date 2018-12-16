@@ -33,7 +33,7 @@ public class HeaderPageInfo {
 	public void setdataPageCount(int dataPageCount) {
 		this.dataPageCount = dataPageCount;
 	}
-	public void incrementNbPage() {
+	public void incrementnombreDePage() {
 		dataPageCount++;
 	}
 	
@@ -95,16 +95,16 @@ public class HeaderPageInfo {
 		ByteBuffer buffer = ByteBuffer.wrap(headerPage);
 
 
-		int nbPage = buffer.getInt();
-		headerPageInfo.setdataPageCount(nbPage);
+		int nombreDePage = buffer.getInt();
+		headerPageInfo.setdataPageCount(nombreDePage);
 
 
-		for(int i = 0; i<nbPage; i++) {
-			Integer idx = new Integer(buffer.getInt());
-			Integer nbSlot = new Integer(buffer.getInt());
-			
-			headerPageInfo.adddx_page_données(idx);
-			headerPageInfo.addNbSlotDispo(nbSlot);
+		for(int i = 0; i<nombreDePage; i++) {
+			Integer indiceX = new Integer(buffer.getInt());
+			Integer nbDeSlot = new Integer(buffer.getInt());
+
+			headerPageInfo.addNbSlotDispo(nbDeSlot);
+			headerPageInfo.adddx_page_données(indiceX);
 		}
 	}
 
@@ -115,14 +115,14 @@ public class HeaderPageInfo {
 
 
 		buffer.putInt(headerPageInfo.getdataPageCount());
-		
-		ArrayList<Integer> idxTab = headerPageInfo.getpageIdx();
-		ArrayList<Integer> nbSlotTab = headerPageInfo.getfreeSlots();
+
+		ArrayList<Integer> nbDeSlot = headerPageInfo.getfreeSlots();
+		ArrayList<Integer> indiceX = headerPageInfo.getpageIdx();
 
 
-		for(int i = 0; i<idxTab.size(); i++) {
-			buffer.putInt(idxTab.get(i).intValue());
-			buffer.putInt(nbSlotTab.get(i).intValue());
+		for(int i = 0; i<indiceX.size(); i++) {
+			buffer.putInt(indiceX.get(i).intValue());
+			buffer.putInt(nbDeSlot.get(i).intValue());
 		}
 	}
 	
