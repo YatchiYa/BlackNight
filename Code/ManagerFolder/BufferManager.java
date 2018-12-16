@@ -9,9 +9,12 @@ import shema.PageId;
 
 
 public class BufferManager {
-
+	// singleton
+	
+	
 	private static BufferTable[] bufferPool;
 	
+	// à vérifié apres !!
 	static {
 		
 		bufferPool = new BufferTable[Constants.frameCount];
@@ -23,60 +26,72 @@ public class BufferManager {
 	
 	
 	
-	
-	public static byte[] getPage(PageId page) throws IOException{
+	/**
+	 * 
+	 * @param iPageId
+	 * @return
+	 * @throws IOException
+	 */
+	public static byte[] getPage(PageId iPageId) throws IOException{
 		
-		for(int j = 0; j<Constants.frameCount ; j++) {
-			if(page.equals(bufferPool[j].getTi().getPage())) {
-				bufferPool[j].getTi().incrementPinCount();
-				return bufferPool[j].getBuffer();
+		
+		for(int i = 0; i<Constants.frameCount ; i++) {
+			if(iPageId.equals(bufferPool[i].getframe().getPage())) {
+				bufferPool[i].getframe().incrementpincount();
+				return bufferPool[i].getBuffer();
 			}
-			if(bufferPool[j].getTi().getPage() == null) {
-				byte[] bufferPage = new byte[(int)Constants.pageSize];
-				DiskManager.readPage(page, bufferPage);
-				bufferPool[j].setBuffer(bufferPage);
-				bufferPool[j].getTi().incrementPinCount();
-				bufferPool[j].getTi().setPage(page);
-				return bufferPage;
-			}
-		}
-		ArrayList<BufferTable> framePinCountZero = new ArrayList<BufferTable>(0);
-		for(int i = 0; i<Constants.frameCount; i++) {
-			if(bufferPool[i].getTi().getPinCount() == 0) {
-				framePinCountZero.add(bufferPool[i]);
+			if(bufferPool[i].getframe().getPage() == null) {
+				byte[] newBuffer = new byte[(int)Constants.pageSize];
+				DiskManager.readPage(iPageId, newBuffer);
+				bufferPool[i].setBuffer(newBuffer);
+				bufferPool[i].getframe().incrementpincount();
+				bufferPool[i].getframe().setPage(iPageId);
+				return newBuffer;
 			}
 		}
+		
+		// a faire une fonction secondaire pour alléger la fonction principale
 
-		if(framePinCountZero.size() != 0) {
-			BufferTable frameAReplacer = framePinCountZero.get(0);
 			
-			for(int i = 1; i<framePinCountZero.size(); i++) {
-				Date timePinCountZeroCourant = framePinCountZero.get(i).getTi().getTimePinCountAtZero();
-				Date timeLru = frameAReplacer.getTi().getTimePinCountAtZero();
+			return lruSystem(iPageId);
+		
+	}
+	
+	public static byte[] lruSystem(PageId iPageId) throws IOException{
+		ArrayList<BufferTable> pincount_zero = new ArrayList<BufferTable>(0);
+		for(int k = 0; k<Constants.frameCount; k++) {
+			if(bufferPool[k].getframe().getpincount() == 0) {
+				pincount_zero.add(bufferPool[k]);
+			}
+		}
+		
+		if(pincount_zero.size() != 0) {
+			BufferTable nouvelleFrame = pincount_zero.get(0);
+			
+			for(int i = 1; i<pincount_zero.size(); i++) {
+				Date tempsCourant = pincount_zero.get(i).getframe().getpincoutInitial();
+				Date Lru = nouvelleFrame.getframe().getpincoutInitial();
 				
-				if(timePinCountZeroCourant.before(timeLru)) {
-					frameAReplacer = framePinCountZero.get(i);
+				if(tempsCourant.before(Lru)) {
+					nouvelleFrame = pincount_zero.get(i);
 				}
 			}
 			
-			if(frameAReplacer.getTi().getDirtyFlag() == 1) {
-				DiskManager.writePage(frameAReplacer.getTi().getPage(),frameAReplacer.getBuffer());
+			if(nouvelleFrame.getframe().getflagDirty() == 1) {
+				DiskManager.writePage(nouvelleFrame.getframe().getPage(),nouvelleFrame.getBuffer());
 			}
-			frameAReplacer.getTi().setPage(page);
-			frameAReplacer.getTi().incrementPinCount();
-			byte[] contenuPage = new byte[(int)Constants.pageSize];
-			DiskManager.readPage(page, contenuPage);
-			frameAReplacer.setBuffer(contenuPage);
-			
-			return contenuPage;
+			nouvelleFrame.getframe().setPage(iPageId);
+			nouvelleFrame.getframe().incrementpincount();
+			byte[] field = new byte[(int)Constants.pageSize];
+			DiskManager.readPage(iPageId, field);
+			nouvelleFrame.setBuffer(field);
+			return field;
 		}
 		else {
-			System.out.println("*** Les pages sont en cours d'utilisation ! ***");
 			return null;
 		}
+		
 	}
-	
-	
 	
 	
 	
@@ -84,13 +99,13 @@ public class BufferManager {
 	
 	public static void freePage(PageId page,int isDirty) {
 		for(int i = 0;i<Constants.frameCount;i++) {
-			if(page.equals(bufferPool[i].getTi().getPage())) {
-				bufferPool[i].getTi().decrementPinCount();
-				if(bufferPool[i].getTi().getPinCount() == 0) {
-					bufferPool[i].getTi().setTimePinCountAtZero(new Date());
+			if(page.equals(bufferPool[i].getframe().getPage())) {
+				bufferPool[i].getframe().decrementpincount();
+				if(bufferPool[i].getframe().getpincount() == 0) {
+					bufferPool[i].getframe().setpincoutInitial(new Date());
 				}
 				if(isDirty == 1) {
-					bufferPool[i].getTi().setDirtyFlag(isDirty);
+					bufferPool[i].getframe().setflagDirty(isDirty);
 				}
 			}
 		}
@@ -104,22 +119,21 @@ public class BufferManager {
 	
 		boolean pinCountZero = true;
 		for(int i = 0; i<Constants.frameCount; i++) {
-			if(bufferPool[i].getTi().getPinCount() != 0) {
+			if(bufferPool[i].getframe().getpincount() != 0) {
 				pinCountZero = false;
 			}
 		}
 		
 		if(pinCountZero) {
 			for(int i = 0; i<Constants.frameCount; i++) {
-				if(bufferPool[i].getTi().getDirtyFlag() == 1) {
-					DiskManager.writePage(bufferPool[i].getTi().getPage(), bufferPool[i].getBuffer());
+				if(bufferPool[i].getframe().getflagDirty() == 1) {
+					DiskManager.writePage(bufferPool[i].getframe().getPage(), bufferPool[i].getBuffer());
 				}
 				bufferPool[i] = new BufferTable();
 			}
 		}
 		else {
-			System.out.println("*** Erreur ! Les pages sont en cours d'utilisation ! ");
-			System.exit(-1);
+			System.exit(-999);
 		}
 	}
 	

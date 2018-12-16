@@ -4,66 +4,69 @@ import java.util.Date;
 
 
 public class Frame {
-	private PageId page;
-	private int pinCount;
-	private int dirtyFlag;
-	private Date timePinCountAtZero;
+	private PageId pageId;
+	private int pincount;
+	private int flagDirty;
+	private Date pincoutInitial;
 	
-	public Frame(PageId page) {
-		this.page = page;
-		this.pinCount = 0;
-		this.dirtyFlag = 0;
-		this.timePinCountAtZero = null;
+	public Frame(PageId p) {
+		this.pageId = p;
+		this.pincount = 0;
+		this.flagDirty = 0;
+		this.pincoutInitial = null;
 	}
 	
 	public Frame() {
 		this(null);
 	}
 
+	public int getflagDirty() {
+		return flagDirty;
+	}
+
+	public void setflagDirty(int flagDirty) {
+		this.flagDirty = flagDirty;
+	}
+	
+
+	public int getpincount() {
+		return pincount;
+	}
+
+	public void setpincount(int pincount) {
+		this.pincount = pincount;
+	}
+
+
 	public PageId getPage() {
-		return page;
+		return pageId;
 	}
 
 	public void setPage(PageId page) {
-		this.page = page;
-	}
-
-	public int getPinCount() {
-		return pinCount;
-	}
-
-	public void setPinCount(int pinCount) {
-		this.pinCount = pinCount;
-	}
-
-	public int getDirtyFlag() {
-		return dirtyFlag;
-	}
-
-	public void setDirtyFlag(int dirtyFlag) {
-		this.dirtyFlag = dirtyFlag;
+		this.pageId = page;
 	}
 	
-	public Date getTimePinCountAtZero() {
-		return timePinCountAtZero;
+	
+	
+	
+	
+	public Date getpincoutInitial() {
+		return pincoutInitial;
 	}
 
-	public void setTimePinCountAtZero(Date timePinCountAtZero) {
-		this.timePinCountAtZero = timePinCountAtZero;
-	}
-
-
-	public void decrementPinCount() {
-		this.pinCount--;
-	}
-
-
-	public void incrementPinCount() {
-		this.pinCount++;
+	public void setpincoutInitial(Date pincoutInitial) {
+		this.pincoutInitial = pincoutInitial;
 	}
 
 
-	public String toString() {
-		return("<page=" + this.page + ",pin=" + this.pinCount + ",dirty=" + this.dirtyFlag + ",time=" + this.timePinCountAtZero + ">\n");
+	public void decrementpincount() {
+		this.pincount--;
 	}
+
+
+	public void incrementpincount() {
+		this.pincount++;
+	}
+
+
 }

@@ -2,31 +2,36 @@ package shema;
 
 public class BufferTable {
 	
-	private Frame ti;
+	private Frame frame;
 	private byte[] buffer;
 	
 	public BufferTable() {
-		this.ti = new Frame();
+		this.frame = new Frame();
 		this.buffer = new byte[(int)constants.Constants.pageSize];
 	}
 
-	public Frame getTi() {
-		return ti;
+	public Frame getframe() {
+		return frame;
 	}
-
-	public void setTi(Frame ti) {
-		this.ti = ti;
+	
+	
+	
+	public void setBuffer(byte[] buffer) {
+		this.buffer = buffer;
+	}
+	
+	public String toString() {
+		return(frame.toString());
+	}
+	
+	
+	public void setframe(Frame frame) {
+		this.frame = frame;
 	}
 
 	public byte[] getBuffer() {
 		return buffer;
 	}
 
-	public void setBuffer(byte[] buffer) {
-		this.buffer = buffer;
-	}
 	
-	public String toString() {
-		return(ti.toString());
-	}
 }
