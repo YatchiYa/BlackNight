@@ -88,7 +88,7 @@ public class HeapFile {
 		
 		readHeaderPageInfo(bufferHeaderPage, hpi);
 
-		Integer idx = new Integer(newpid.getIdX());
+		Integer idx = new Integer(newpid.getPageIdx());
 		hpi.addIdxPage(idx);
 
 		hpi.addNbSlotDispo(relation.getcount_slot());
@@ -114,7 +114,7 @@ public class HeapFile {
 		readHeaderPageInfo(bufferHeaderPage, hpi);
 
 
-		Integer idChercher = new Integer(pid.getIdX());
+		Integer idChercher = new Integer(pid.getPageIdx());
 		boolean find = hpi.decrementNbSlotDispo(idChercher);
 		if(!find) {
 			System.out.println("*** Erreur ! Cette page n'est pas présente ! ***\n");

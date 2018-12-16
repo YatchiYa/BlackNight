@@ -30,16 +30,16 @@ public class DiskManager {
 
 
 	public static void readPage(PageId page, byte[] buffer) throws IOException{
-		RandomAccessFile rAf = new RandomAccessFile(Constants.PATH+page.getFileId()+".rf", "rw");
-		rAf.seek(page.getIdX()*Constants.pageSize);
+		RandomAccessFile rAf = new RandomAccessFile(Constants.PATH+page.getFileIdx()+".rf", "rw");
+		rAf.seek(page.getPageIdx()*Constants.pageSize);
 		rAf.readFully(buffer);
 		rAf.close();
 	}
 
 
 	public static void writePage(PageId page, byte[] buffer) throws IOException {
-		RandomAccessFile rAf = new RandomAccessFile(Constants.PATH+page.getFileId()+".rf", "rw");
-		rAf.seek(page.getIdX()*Constants.pageSize);
+		RandomAccessFile rAf = new RandomAccessFile(Constants.PATH+page.getFileIdx()+".rf", "rw");
+		rAf.seek(page.getPageIdx()*Constants.pageSize);
 		rAf.write(buffer);
 		rAf.close();
 	}

@@ -3,22 +3,22 @@ package shema;
 
 public class PageId {
 
-	private int fileId;
+	private int FileIdx;
 
-	private int idX;
+	private int PageIdx;
 
 
-	public PageId(int fileId, int idX) {
-		this.fileId = fileId;
-		this.idX = idX;
+	public PageId(int FileIdx, int PageIdx) {
+		this.FileIdx = FileIdx;
+		this.PageIdx = PageIdx;
 	}
 
-	public int getFileId() {
-		return fileId;
+	public int getFileIdx() {
+		return FileIdx;
 	}
 
-	public int getIdX() {
-		return idX;
+	public int getPageIdx() {
+		return PageIdx;
 	}
 
 	@Override
@@ -30,9 +30,9 @@ public class PageId {
 		if (getClass() != obj.getClass())
 			return false;
 		PageId other = (PageId) obj;
-		if (fileId != other.fileId)
+		if (FileIdx != other.FileIdx)
 			return false;
-		if (idX != other.idX)
+		if (PageIdx != other.PageIdx)
 			return false;
 		return true;
 	}

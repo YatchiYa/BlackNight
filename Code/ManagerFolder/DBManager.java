@@ -22,6 +22,67 @@ public class DBManager{
 	private static DBDef db;
 	private static ArrayList<HeapFile> listeHeapFile;
 
+	/**
+	 * 
+	 * @param commande
+	 */
+	public static void processCommande(String commande) {
+		cmd.listCommande(commande);
+		
+	}
+	
+/**
+ * 
+ * @param nomRelation
+ * @param nombreColonnes
+ * @param typesDesColonnes
+ */
+	public static void createRelation(String nomRelation, int nombreColonnes, ArrayList<String> typesDesColonnes) {
+		RelDefShema newRelation = new RelDefShema(nomRelation, nombreColonnes);
+		newRelation.settypeDeColonne(typesDesColonnes);
+		
+		int reconewRelDefSize = 0;
+
+		for(String s : typesDesColonnes) {
+			switch(s.toLowerCase()) {
+				case "int" :  reconewRelDefSize += 4;
+				break;
+				case "float" : reconewRelDefSize += 4;
+				break;
+				default : reconewRelDefSize += 2*Integer.parseInt(s.substring(6));
+			}
+		}
+
+		int slotCount = Constants.pageSize/(reconewRelDefSize+1);
+
+
+		RelDef newRelDef = new RelDef(newRelation,db.getcpt(),reconewRelDefSize,slotCount);
+
+
+		db.AddRelation(newRelDef);
+
+		db.incrCpt();
+
+
+		try {
+			DiskManager.createFile(newRelDef.getfileIdx());
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+
+
+		HeapFile heapFile = new HeapFile(newRelDef);
+		listeHeapFile.add(heapFile);
+
+		try {
+			heapFile.createHeader();
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	
 
 	public static void init() throws FileNotFoundException, IOException, ClassNotFoundException { 
 		db = new DBDef();
@@ -61,7 +122,7 @@ public class DBManager{
 		}
 
 
-		db.reset();
+		db.raz();
 
 		listeHeapFile = new ArrayList<HeapFile>(0);
 		
@@ -71,7 +132,7 @@ public class DBManager{
 
 	public static void refreshHeapFiles() {
 		listeHeapFile = new ArrayList<HeapFile>(0);
-		for(RelDef r : db.getL()) {
+		for(RelDef r : db.getlistRelDef()) {
 			listeHeapFile.add(new HeapFile(r));
 		}
 	}
@@ -92,7 +153,7 @@ public class DBManager{
 		Record r = new Record();
 		r.setValue(listValeurs);
 		
-		ArrayList<RelDef> listRelation = db.getL();
+		ArrayList<RelDef> listRelation = db.getlistRelDef();
 		RelDef relFind = null;
 		boolean find = false;
 		
@@ -114,50 +175,6 @@ public class DBManager{
 		}	
 	}
 
-	public static void createRelation(String nomRelation, int nombreColonnes, ArrayList<String> typesDesColonnes) {
-		RelDefShema nouvelle_relation = new RelDefShema(nomRelation, nombreColonnes);
-		nouvelle_relation.settypeDeColonne(typesDesColonnes);
-		
-		int sizeRec = 0;
-
-		for(String s : typesDesColonnes) {
-			switch(s.toLowerCase()) {
-				case "int" : case "float" : sizeRec += 4;
-				break;
-
-				default : sizeRec += 2*Integer.parseInt(s.substring(6));
-			}
-		}
-
-		int slotCount = Constants.pageSize/(sizeRec+1);
-
-
-		RelDef rd = new RelDef(nouvelle_relation,db.getCount(),sizeRec,slotCount);
-
-
-		db.ajouterRelation(rd);
-
-		db.incrementCount();
-
-
-		try {
-			DiskManager.createFile(rd.getfileIdx());
-		}catch(IOException e) {
-			System.out.println("*** Une ereur s'est produite lors de la création du fichier ! ***");
-			System.out.println("Détails : " + e.getMessage());
-		}
-
-
-		HeapFile hf = new HeapFile(rd);
-		listeHeapFile.add(hf);
-
-		try {
-			hf.createHeader();
-		}catch(IOException e) {
-			System.out.println("*** Une ereur s'est produite lors de la création de la header page ! ***");
-			System.out.println("Détails : " + e.getMessage());
-		}
-	}
 	
 	public static DBDef getDB(){
 		return db;
@@ -168,9 +185,4 @@ public class DBManager{
 	}
 	
 	
-	
-	public static void processCommande(String commande) {
-		cmd.listCommande(commande);
-		
-	}
 }
