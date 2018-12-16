@@ -14,9 +14,11 @@ import shema.RelDefShema;
 public class HeapFile {
 	
 	private RelDef relation;
+	private HeaderPageInfo headerPageInfo;
 	
 	public HeapFile(RelDef relation) {
 		this.relation = relation;
+		this.headerPageInfo = new HeaderPageInfo();
 	}
 
 
@@ -25,41 +27,7 @@ public class HeapFile {
 	}
 
 
-	public void readHeaderPageInfo(byte[] headerPage, HeaderPageInfo hfi) throws IOException {
 	
-		ByteBuffer buffer = ByteBuffer.wrap(headerPage);
-
-
-		int nbPage = buffer.getInt();
-		hfi.setdataPageCount(nbPage);
-
-
-		for(int i = 0; i<nbPage; i++) {
-			Integer idx = new Integer(buffer.getInt());
-			Integer nbSlot = new Integer(buffer.getInt());
-			
-			hfi.adddx_page_données(idx);
-			hfi.addNbSlotDispo(nbSlot);
-		}
-	}
-
-
-	public void writeHeaderPageInfo(byte[] headerPage, HeaderPageInfo hfi) throws IOException {
-
-		ByteBuffer buffer = ByteBuffer.wrap(headerPage);
-
-
-		buffer.putInt(hfi.getdataPageCount());
-		
-		ArrayList<Integer> idxTab = hfi.getpageIdx();
-		ArrayList<Integer> nbSlotTab = hfi.getfreeSlots();
-
-
-		for(int i = 0; i<idxTab.size(); i++) {
-			buffer.putInt(idxTab.get(i).intValue());
-			buffer.putInt(nbSlotTab.get(i).intValue());
-		}
-	}
 
 	public void getHeaderPageInfo(HeaderPageInfo hpi) throws IOException {
 
@@ -70,7 +38,7 @@ public class HeapFile {
 		byte[] bufferHeaderPage = BufferManager.getPage(headerPage);
 
 
-		readHeaderPageInfo(bufferHeaderPage, hpi);
+		this.headerPageInfo.readFromBuffer(bufferHeaderPage, hpi);
 		
 		BufferManager.freePage(headerPage, 0);
 	}
@@ -86,7 +54,7 @@ public class HeapFile {
 		
 		HeaderPageInfo hpi = new HeaderPageInfo();
 		
-		readHeaderPageInfo(bufferHeaderPage, hpi);
+		this.headerPageInfo.readFromBuffer(bufferHeaderPage, hpi);
 
 		Integer idx = new Integer(newpid.getPageIdx());
 		hpi.adddx_page_données(idx);
@@ -95,7 +63,7 @@ public class HeapFile {
 
 		hpi.incrementNbPage();
 		
-		writeHeaderPageInfo(bufferHeaderPage, hpi);
+		this.headerPageInfo.writeToBuffer(bufferHeaderPage, hpi);
 
 		BufferManager.freePage(headerPage, 1);
 	}
@@ -111,7 +79,7 @@ public class HeapFile {
 		
 		HeaderPageInfo hpi = new HeaderPageInfo();
 				
-		readHeaderPageInfo(bufferHeaderPage, hpi);
+		this.headerPageInfo.readFromBuffer(bufferHeaderPage, hpi);
 
 
 		Integer idChercher = new Integer(pid.getPageIdx());
@@ -121,7 +89,7 @@ public class HeapFile {
 			BufferManager.freePage(headerPage, 0);
 		}
 		else {
-			writeHeaderPageInfo(bufferHeaderPage, hpi);
+			this.headerPageInfo.writeToBuffer(bufferHeaderPage, hpi);
 
 			BufferManager.freePage(headerPage, 1);
 		}
@@ -474,57 +442,7 @@ public class HeapFile {
 		return relation;
 	}
 
-	public void join(HeapFile relFind2, int col1, int col2) throws IOException {
-
-		int fileIdHP1 = relation.getfileIdx();
-		int fileIdHP2 = relFind2.getRel().getfileIdx();
-		
-		int totalRecordPrinted = 0;
-
-
-		HeaderPageInfo hpi1 = new HeaderPageInfo();
-		getHeaderPageInfo(hpi1);
-		HeaderPageInfo hpi2 = new HeaderPageInfo();
-		relFind2.getHeaderPageInfo(hpi2);
-		
-		ArrayList<Integer> listIdxPage1 = hpi1.getpageIdx();
-		ArrayList<Integer> listIdxPage2 = hpi2.getpageIdx();
-
-
-		for(int i=0; i<listIdxPage1.size(); i++) {
-			
-			int idxPageCourante1 = listIdxPage1.get(i).intValue();
-			PageId pageCourante1 = new PageId(fileIdHP1, idxPageCourante1); 
-			
-			ArrayList<Record> listRecords1 = getAllRecordsPage(pageCourante1);
-
-
-			for(int j=0; j<listIdxPage2.size(); j++) {
-				
-				int idxPageCourante2 = listIdxPage2.get(j).intValue();
-				PageId pageCourante2 = new PageId(fileIdHP2, idxPageCourante2); 
-				
-				ArrayList<Record> listRecords2 = relFind2.getAllRecordsPage(pageCourante2);
-				
-				for(int h=0; h<listRecords1.size();h++) {
-					for(int k=0; k<listRecords2.size();k++) {
-						Record r1 = listRecords1.get(h);
-						Record r2 = listRecords2.get(k);
-						
-						String val1 = r1.getListValues().get(col1-1);
-						String val2 = r2.getListValues().get(col2-1);
-						
-						if(val1.equals(val2)) {
-							System.out.println(r1.toString() + r2.toString());
-							totalRecordPrinted++;
-						}	
-					}
-				}
-				
-			}
-		}
-						
-		System.out.println("Total records : " + totalRecordPrinted);
 	
-	}
+	
+	
 }
