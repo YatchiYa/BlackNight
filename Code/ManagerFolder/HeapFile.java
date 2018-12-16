@@ -24,6 +24,9 @@ public class HeapFile {
 		this.headerPageInfo = new HeaderPageInfo();
 	}
 
+	
+	
+	
 	public void createNewOnDisk() throws IOException {
 		
 		try {
@@ -32,11 +35,10 @@ public class HeapFile {
 			e.printStackTrace();
 		}
 		try {
-		createHeader();
+			DiskManager.addPage(relDef.getfileIdx());
 	}catch(IOException e) {
 		e.printStackTrace();
 	}
-		System.out.println("izan");
 		int fileIdx = relDef.getfileIdx();
 		PageId hp = new PageId(fileIdx, 0);
 		
@@ -44,31 +46,36 @@ public class HeapFile {
 		byte[] bhp = BufferManager.getPage(hp);
 		this.headerPageInfo.readFromBuffer(bhp, newHeaderPageInfo);
 		BufferManager.freePage(hp, 1);
-		System.out.println("izan2");
 	}
-/*
-	public void createNewOnDisk() throws IOException {
-		DiskManager.createFile(relDef.getfileIdx());
-		DiskManager.addPage(relDef.getfileIdx());
+
+
+
+
+	public PageId getFreePageId() throws IOException {
+	
+		int fileIndex = relDef.getfileIdx();
 		
+		HeaderPageInfo headerPageInfo = new HeaderPageInfo();
+		getHeaderPageInfo(headerPageInfo);
 		
+		ArrayList<Integer> listIndex = headerPageInfo.getpageIdx();
+		ArrayList<Integer> freeSlot = headerPageInfo.getfreeSlots();
 		
-		int fileIdx = relDef.getfileIdx();
-		PageId hp = new PageId(fileIdx, 0);
+		for(int i = 0;i<listIndex.size();i++) {
+			int index = listIndex.get(i).intValue();
+			int	availableSlot = freeSlot.get(i).intValue();
+			
+			if(availableSlot > 0) {
+				return new PageId(fileIndex,index); 
+			}
+		}
+		PageId newPage = DiskManager.addPage(relDef.getfileIdx());
 		
-		HeaderPageInfo newHeaderPageInfo = new HeaderPageInfo();
-		byte[] bhp = BufferManager.getPage(hp);
-		this.headerPageInfo.readFromBuffer(bhp, newHeaderPageInfo);
-		BufferManager.freePage(hp, 0);
-		System.out.println("izan");
+		updateHeaderNewDataPage(newPage);
+		
+		return newPage;
 	}
 	
-*/	
-	public void createHeader() throws IOException {
-		DiskManager.addPage(relDef.getfileIdx());
-	}
-
-
 	
 
 		// utilisé 
@@ -266,30 +273,6 @@ public class HeapFile {
 	}
 */
 
-	public PageId getFreePageId() throws IOException {
-	
-		int fileIndex = relDef.getfileIdx();
-		
-		HeaderPageInfo headerPageInfo = new HeaderPageInfo();
-		getHeaderPageInfo(headerPageInfo);
-		
-		ArrayList<Integer> listIndex = headerPageInfo.getpageIdx();
-		ArrayList<Integer> freeSlot = headerPageInfo.getfreeSlots();
-		
-		for(int i = 0;i<listIndex.size();i++) {
-			int index = listIndex.get(i).intValue();
-			int	availableSlot = freeSlot.get(i).intValue();
-			
-			if(availableSlot > 0) {
-				return new PageId(fileIndex,index); 
-			}
-		}
-		PageId newPage = DiskManager.addPage(relDef.getfileIdx());
-		
-		updateHeaderNewDataPage(newPage);
-		
-		return newPage;
-	}
 
 
 	public void insertRecordInPage(Record r, PageId page) throws IOException {

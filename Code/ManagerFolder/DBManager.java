@@ -69,23 +69,20 @@ public class DBManager{
 
 		HeapFile heapFile = new HeapFile(newRelDef);
 		listeHeapFile.add(heapFile);
-		heapFile.createNewOnDisk();
+		
+		try {
+			heapFile.createNewOnDisk();
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
 /*
 		try {
 			DiskManager.createFile(newRelDef.getfileIdx());
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
-
-
-		HeapFile heapFile = new HeapFile(newRelDef);
-		listeHeapFile.add(heapFile);
-
-		try {
-			heapFile.createHeader();
-		}catch(IOException e) {
-			e.printStackTrace();
-		}*/
+		
+ 		*/
 	}
 
 	

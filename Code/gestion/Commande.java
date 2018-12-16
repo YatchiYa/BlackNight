@@ -79,7 +79,7 @@ public class Commande {
 	public static ArrayList<String> extractContenuCSV(String nomFichier) throws IOException{
 		
 		ArrayList<String> contenuCSV = new ArrayList<String>();
-        try(FileReader fr = new FileReader(Constants.PATH + nomFichier);BufferedReader br = new BufferedReader(fr)){
+        try(FileReader fr = new FileReader(Constants.CSVPATH + nomFichier);BufferedReader br = new BufferedReader(fr)){
         	String ligne;
         	do{
         		ligne = br.readLine();
