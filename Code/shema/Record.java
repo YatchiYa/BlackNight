@@ -3,48 +3,48 @@ package shema;
 import java.util.ArrayList;
 
 public class Record {
-	private ArrayList<String> listValues;
-	private PageId page;
-	private int numSlot;
+	private ArrayList<String> values;
+	private PageId pageId;
+	private int numeroSlot;
 	
 	public Record() {
-		listValues = new ArrayList<String>(0);
-		this.page = null;
+		values = new ArrayList<String>(0);
+		this.pageId = null;
 	}
 	
-	public Record(PageId page,int numSlot) {
-		listValues = new ArrayList<String>(0);
-		this.page = page;
-		this.numSlot = numSlot;
+	public Record(PageId pageId,int numeroSlot) {
+		values = new ArrayList<String>(0);
+		this.pageId = pageId;
+		this.numeroSlot = numeroSlot;
 	}
 	
 	public void setValue(ArrayList<String> liste) {
-		listValues = liste;
+		values = liste;
 	}
 	
-	public PageId getPage() {
-		return page;
+	public PageId getpageId() {
+		return pageId;
 	}
 
-	public void setPage(PageId page) {
-		this.page = page;
+	public void setpageId(PageId pageId) {
+		this.pageId = pageId;
 	}
 
-	public int getNumSlot() {
-		return numSlot;
+	public int getnumeroSlot() {
+		return numeroSlot;
 	}
 
-	public void setNumSlot(int numSlot) {
-		this.numSlot = numSlot;
+	public void setnumeroSlot(int numeroSlot) {
+		this.numeroSlot = numeroSlot;
 	}
 
-	public ArrayList<String> getListValues() {
-		return listValues;
+	public ArrayList<String> getvalues() {
+		return values;
 	}
 
 	public String toString() {
 		StringBuffer rec = new StringBuffer();
-		for(String val : listValues) {
+		for(String val : values) {
 			rec.append(val + "\t|\t");
 		}
 		return rec.toString();

@@ -14,8 +14,6 @@ import shema.RelDefShema;
 public class HeapFile {
 	
 	private RelDef relDef;
-
-
 	private HeaderPageInfo headerPageInfo;
 	
 	
@@ -26,7 +24,10 @@ public class HeapFile {
 
 	
 	
-	
+	/**
+	 * 
+	 * @throws IOException
+	 */
 	public void createNewOnDisk() throws IOException {
 		
 		try {
@@ -50,13 +51,18 @@ public class HeapFile {
 
 
 
-
+/**
+ * 
+ * @return
+ * @throws IOException
+ */
 	public PageId getFreePageId() throws IOException {
 	
 		int fileIndex = relDef.getfileIdx();
 		
-		HeaderPageInfo headerPageInfo = new HeaderPageInfo();
-		getHeaderPageInfo(headerPageInfo);
+		HeaderPageInfo headerPageInfo_2 = new HeaderPageInfo();
+		HeapFileTreatment hfm = new HeapFileTreatment();
+		hfm.getHPI(headerPageInfo_2, relDef);
 		
 		ArrayList<Integer> listIndex = headerPageInfo.getpageIdx();
 		ArrayList<Integer> freeSlot = headerPageInfo.getfreeSlots();
@@ -71,55 +77,21 @@ public class HeapFile {
 		}
 		PageId newPage = DiskManager.addPage(relDef.getfileIdx());
 		
-		updateHeaderNewDataPage(newPage);
+		hfm.miseAjourHPI(newPage,relDef);
 		
 		return newPage;
 	}
 	
 	
-
-		// utilisé 
-	public void getHeaderPageInfo(HeaderPageInfo hpi) throws IOException {
-
-		int fileIdHP = relDef.getfileIdx();
-
-		PageId headerPage = new PageId(fileIdHP, 0);
-		
-		byte[] bufferHeaderPage = BufferManager.getPage(headerPage);
-
-
-		this.headerPageInfo.readFromBuffer(bufferHeaderPage, hpi);
-		
-		BufferManager.freePage(headerPage, 0);
-	}
-
-
-	public void updateHeaderNewDataPage(PageId newpid) throws IOException {
-
-		int fileIdHP = relDef.getfileIdx();
-
-		PageId headerPage = new PageId(fileIdHP, 0);
-		
-		byte[] bufferHeaderPage = BufferManager.getPage(headerPage);
-		
-		HeaderPageInfo hpi = new HeaderPageInfo();
-		
-		this.headerPageInfo.readFromBuffer(bufferHeaderPage, hpi);
-
-		Integer idx = new Integer(newpid.getPageIdx());
-		hpi.adddx_page_données(idx);
-
-		hpi.addNbSlotDispo(relDef.getslotCount());
-
-		hpi.incrementnombreDePage();
-		
-		this.headerPageInfo.writeToBuffer(bufferHeaderPage, hpi);
-
-		BufferManager.freePage(headerPage, 1);
-	}
-
-
-	public void updateHeaderWithTakenSlot(PageId pid) throws IOException {
+	
+	
+	
+	/**
+	 * 
+	 * @param iPageId
+	 * @throws IOException
+	 */
+	public void updateHeaderWithTakenSlot(PageId iPageId) throws IOException {
 
 		int fileIndex = relDef.getfileIdx();
 
@@ -132,10 +104,9 @@ public class HeapFile {
 		this.headerPageInfo.readFromBuffer(bufferHeaderPage, hpi);
 
 
-		Integer idChercher = new Integer(pid.getPageIdx());
-		boolean find = hpi.decrementfreeSlots(idChercher);
-		if(!find) {
-			System.out.println("*** Erreur ! Cette page n'est pas présente ! ***\n");
+		Integer searchIdx = new Integer(iPageId.getPageIdx());
+		
+		if(!hpi.decrementfreeSlots(searchIdx)) {
 			BufferManager.freePage(headerPage, 0);
 		}
 		else {
@@ -145,7 +116,11 @@ public class HeapFile {
 		}
 	}
 
-
+	
+	
+	
+	
+	
 	public void readPageBitmapInfo(byte[] bufferPage, Bytemap bmpi) throws IOException {
 
 		int nbSlot = relDef.getslotCount();
@@ -190,7 +165,7 @@ public class HeapFile {
 
 		ArrayList<String> typeCol = schema.gettypeDeColonne();
 
-		ArrayList<String> listVal = r.getListValues();
+		ArrayList<String> listVal = r.getvalues();
 		
 		ByteBuffer buffer = ByteBuffer.wrap(bufferPage);
 
@@ -315,14 +290,16 @@ public class HeapFile {
 
 
 	public void printAllRecords() throws IOException {
-		//on recupere la header page du heapfile
+
 		int fileIdHP = relDef.getfileIdx();
 		int slotCount = relDef.getslotCount();
 		int recordSize = relDef.getrecordSize();
 		int totalRecordPrinted = 0;
 		
 		HeaderPageInfo hpi = new HeaderPageInfo();
-		getHeaderPageInfo(hpi);
+
+		HeapFileTreatment hfm = new HeapFileTreatment();
+		hfm.getHPI(hpi, relDef);
 		
 		ArrayList<Integer> listIdxPage = hpi.getpageIdx();
 		
@@ -364,7 +341,8 @@ public class HeapFile {
 		int totalRecordPrinted = 0;
 		
 		HeaderPageInfo hpi = new HeaderPageInfo();
-		getHeaderPageInfo(hpi);
+		HeapFileTreatment hfm = new HeapFileTreatment();
+		hfm.getHPI(hpi, relDef);
 		
 		ArrayList<Integer> listIdxPage = hpi.getpageIdx();
 		
@@ -387,7 +365,7 @@ public class HeapFile {
 					Record recordToPrint = new Record();
 					readRecordFromBuffer(recordToPrint, bufferPageCourante, slotCount + caseIdX*recordSize);
 
-					if(recordToPrint.getListValues().get(indiceColonne-1).equals(condition)) {
+					if(recordToPrint.getvalues().get(indiceColonne-1).equals(condition)) {
 						System.out.println(recordToPrint.toString());
 						totalRecordPrinted++;
 					}
@@ -409,7 +387,8 @@ public class HeapFile {
 		int recordSize = relDef.getrecordSize();
 		
 		HeaderPageInfo hpi = new HeaderPageInfo();
-		getHeaderPageInfo(hpi);
+		HeapFileTreatment hfm = new HeapFileTreatment();
+		hfm.getHPI(hpi, relDef);
 		
 		ArrayList<Integer> listIdxPage = hpi.getpageIdx();
 		
@@ -447,8 +426,8 @@ public class HeapFile {
 		int recordSize = relDef.getrecordSize();
 		
 		HeaderPageInfo hpi = new HeaderPageInfo();
-		getHeaderPageInfo(hpi);
-
+		HeapFileTreatment hfm = new HeapFileTreatment();
+		hfm.getHPI(hpi, relDef);
 
 		byte[] bufferPage = BufferManager.getPage(page);
 			
@@ -481,6 +460,30 @@ public class HeapFile {
 
 	public void setrelDef(RelDef relDef) {
 		this.relDef = relDef;
+	}
+	public RelDef getRelDef() {
+		return relDef;
+	}
+
+
+
+
+	public void setRelDef(RelDef relDef) {
+		this.relDef = relDef;
+	}
+
+
+
+
+	public HeaderPageInfo getHeaderPageInfo() {
+		return headerPageInfo;
+	}
+
+
+
+
+	public void setHeaderPageInfo(HeaderPageInfo headerPageInfo) {
+		this.headerPageInfo = headerPageInfo;
 	}
 
 	
