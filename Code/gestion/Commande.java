@@ -177,7 +177,7 @@ public class Commande {
 		HeapFile relFind = null;
 		
 		for(int i =0 ;i<list.size();i++) {
-			String nomRelCourant = list.get(i).getRel().getrelDef().getnomDeRelation();
+			String nomRelCourant = list.get(i).getrelDef().getrelDef().getnomDeRelation();
 			HeapFile relCourant = list.get(i);
 			if(nomRelCourant.equals(nomRelation)) {
 				relFind = relCourant;
