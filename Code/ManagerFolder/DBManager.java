@@ -90,15 +90,7 @@ public class DBManager{
 
 	public static void init() throws FileNotFoundException, IOException, ClassNotFoundException { 
 		db = new DBDef();
-		
-		File fichier =  new File(Constants.catalogRep);
-		if(fichier.exists()) {
-
-			try(FileInputStream fis = new FileInputStream(fichier);ObjectInputStream ois =  new ObjectInputStream(fis);){
-
-				db = (DBDef)ois.readObject();
-			}
-		}
+		db.init();
 
 		refreshHeapFiles();
 
@@ -143,18 +135,8 @@ public class DBManager{
 
 
 	public static void finish() throws FileNotFoundException, IOException {
-		File fichier =  new File(Constants.catalogRep);
 
-
-		try{
-				FileOutputStream fos = new FileOutputStream(fichier);
-				ObjectOutputStream oos =  new ObjectOutputStream(fos);
-				oos.writeObject(db);
-		}
-		catch(Exception e) {
-			e.printStackTrace();
-		}
-		
+		db.finish();		
 		BufferManager.flushAll();
 	}
 	
@@ -190,10 +172,27 @@ public class DBManager{
 	}
 
 	
-	public static DBDef getDB(){
+	
+	public static Commande getCmd() {
+		return cmd;
+	}
+
+	public static void setCmd(Commande cmd) {
+		DBManager.cmd = cmd;
+	}
+
+	public static DBDef getDb() {
 		return db;
 	}
-	
+
+	public static void setDb(DBDef db) {
+		DBManager.db = db;
+	}
+
+	public static void setListeHeapFile(ArrayList<HeapFile> listeHeapFile) {
+		DBManager.listeHeapFile = listeHeapFile;
+	}
+
 	public static ArrayList<HeapFile> getListeHeapFile(){
 		return listeHeapFile;
 	}

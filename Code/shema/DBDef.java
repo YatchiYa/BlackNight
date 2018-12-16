@@ -1,6 +1,15 @@
 package shema;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+
+import ManagerFolder.DBManager;
+import constants.Constants;
 
 
 public class DBDef{
@@ -22,8 +31,30 @@ public class DBDef{
 		this.listRelDef.add(rd);
 	}
 	
+	public void init() throws ClassNotFoundException, IOException {
+		File fichier =  new File(Constants.catalogRep);
+		if(fichier.exists()) {
+
+			try(FileInputStream fis = new FileInputStream(fichier);ObjectInputStream ois =  new ObjectInputStream(fis);){
+
+				DBManager.setDb((DBDef)ois.readObject());
+			}
+		}
+	}
 	
-	
+	public void finish() {
+		File fichier =  new File(Constants.catalogRep);
+
+
+		try{
+				FileOutputStream fos = new FileOutputStream(fichier);
+				ObjectOutputStream oos =  new ObjectOutputStream(fos);
+				oos.writeObject(DBManager.getDb());
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
 	
 
 	public ArrayList<RelDef> getlistRelDef() {

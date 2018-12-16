@@ -10,6 +10,7 @@ import shema.PageId;
 import shema.Record;
 import shema.RelDef;
 import shema.RelDefShema;
+import shema.Rid;
 
 public class HeapFile {
 	
@@ -116,90 +117,156 @@ public class HeapFile {
 		}
 	}
 
-	
-	
-	
-	
-	
-	public void readPageBitmapInfo(byte[] bufferPage, Bytemap bmpi) throws IOException {
+	 
+	 /**
+	  * 
+	  * @param iRecord
+	  * @param ioBuffer
+	  * @param iSlotIdx
+	  */
+	public void writeRecordInBuffer(Record iRecord, byte[] ioBuffer,int iSlotIdx) {
 
-		int nbSlot = relDef.getslotCount();
-		
-		ByteBuffer buffer = ByteBuffer.wrap(bufferPage);
-
-
-		for(int i = 0; i<nbSlot; i++) {
-			Byte status = new Byte(buffer.get());
-			bmpi.addindiceDuSlot(status);
-		}
-	}
+		RelDefShema RelationMap = relDef.getrelDef();	
+		ArrayList<String> typeDeColonne = RelationMap.gettypeDeColonne();
+		ArrayList<String> listeDeValeurs = iRecord.getvalues();
+		ByteBuffer buffer = ByteBuffer.wrap(ioBuffer);
+		buffer.position(iSlotIdx);
 
 
-	public void writePageBitmapInfo(byte[] bufferPage, Bytemap bmpi) throws IOException {
-
-
-
-		int nbSlot = relDef.getslotCount();
-		
-		ArrayList<Byte> bitMap = bmpi.getIndiceDuSlot();
-		
-		ByteBuffer buffer = ByteBuffer.wrap(bufferPage);
-
-
-		for(int i = 0; i<nbSlot; i++){
-			buffer.put(bitMap.get(i).byteValue());
-		}
-	}
-
-	 Record readRecordFromBuffer(byte[] Buffer, int SlotIdx) {
-		
-		 
-		 return null;
-		 
-	 }
-
-	public void writeRecordInBuffer(Record r, byte[] bufferPage,int offset) {
-
-		RelDefShema schema = relDef.getrelDef();	
-
-
-		ArrayList<String> typeCol = schema.gettypeDeColonne();
-
-		ArrayList<String> listVal = r.getvalues();
-		
-		ByteBuffer buffer = ByteBuffer.wrap(bufferPage);
-
-
-		buffer.position(offset);
-
-
-		for(int i = 0; i<typeCol.size(); i++) {
-			String type = typeCol.get(i);
-			String val = listVal.get(i);
+		for(int i = 0; i<typeDeColonne.size(); i++) {
+			String type = typeDeColonne.get(i);
+			String val = listeDeValeurs.get(i);
 			
-			int valToInt;
-			float valtoFloat;
-			String valToString;
+			int convertToInt;
+			float convertToFloat;
+			String convertToString;
 			
 			switch(type.toLowerCase()) {
 				case "int" : 
-					valToInt = Integer.parseInt(val);
-					buffer.putInt(valToInt);
+					convertToInt = Integer.parseInt(val);
+					buffer.putInt(convertToInt);
 					break;
 				case "float" : 
-					valtoFloat = Float.parseFloat(val);
-					buffer.putFloat(valtoFloat);
+					convertToFloat = Float.parseFloat(val);
+					buffer.putFloat(convertToFloat);
 					break;
 				default : 
-					int longueurString = Integer.parseInt(type.substring(6));
-					valToString = val;
-					for(int j = 0; j<longueurString; j++) {
-						buffer.putChar(valToString.charAt(j));
+					int taille = Integer.parseInt(type.substring(6));
+					convertToString = val;
+					for(int j = 0; j<taille; j++) {
+						buffer.putChar(convertToString.charAt(j));
 					}
 			}
 		}
 	}
 
+	
+/**
+ * 
+ * @param iRecord
+ * @param iPageId
+ * @throws IOException
+ */
+	public Rid insertRecordInPage(Record iRecord, PageId iPageId) throws IOException {
+		
+		byte[] bufferPage = BufferManager.getPage(iPageId);
+		Bytemap bytemap = new Bytemap();
+		int nombreDeSlot = relDef.getslotCount();
+				
+		ByteBuffer buffer = ByteBuffer.wrap(bufferPage);
+
+		for(int i = 0; i<nombreDeSlot; i++) {
+			Byte indice = new Byte(buffer.get());
+			bytemap.addindiceDuSlot(indice);
+		}
+		
+		ArrayList<Byte> indiceSlot = bytemap.getIndiceDuSlot();
+
+
+		int indiceIdx = indiceSlot.indexOf(new Byte((byte)0));
+		
+		if(indiceIdx == -1) {
+			BufferManager.freePage(iPageId, 0);
+			return null;
+		}
+		else {
+			int slotCpt = relDef.getslotCount();
+			int SizeOfRecord = relDef.getrecordSize();
+
+			writeRecordInBuffer(iRecord, bufferPage, slotCpt + indiceIdx*SizeOfRecord);
+			
+			bytemap.setStatusOccup(indiceIdx);			
+			ArrayList<Byte> x = bytemap.getIndiceDuSlot();
+			ByteBuffer z = ByteBuffer.wrap(bufferPage);
+
+			for(int i = 0; i<nombreDeSlot; i++){
+				z.put(x.get(i).byteValue());
+			}
+			
+			Rid rid = new Rid();
+			rid.setPageId(iPageId);
+			rid.setSlotIdx(nombreDeSlot);
+			
+			BufferManager.freePage(iPageId, 1);
+			return rid;
+		}
+	}
+	
+	
+	public Rid  insertRecord(Record iRecord) throws IOException {
+		PageId pageWhereRecordSaved = getFreePageId();
+
+		Rid rid = new Rid();
+		rid = insertRecordInPage(iRecord, pageWhereRecordSaved);
+		
+		updateHeaderWithTakenSlot(pageWhereRecordSaved);
+		
+		return rid;
+
+	}
+	
+
+	
+	
+	// a supprimer
+	
+	
+	public void readPagebytemapInfo(byte[] bufferPage, Bytemap bmpi) throws IOException {
+
+		int nombreDeSlot = relDef.getslotCount();
+		
+		ByteBuffer buffer = ByteBuffer.wrap(bufferPage);
+
+
+		for(int i = 0; i<nombreDeSlot; i++) {
+			Byte indice = new Byte(buffer.get());
+			bmpi.addindiceDuSlot(indice);
+		}
+	}
+
+
+	public void writePagebytemapInfo(byte[] bufferPage, Bytemap bmpi) throws IOException {
+
+
+
+		int nombreDeSlot = relDef.getslotCount();
+		
+		ArrayList<Byte> bytemap = bmpi.getIndiceDuSlot();
+		
+		ByteBuffer buffer = ByteBuffer.wrap(bufferPage);
+
+
+		for(int i = 0; i<nombreDeSlot; i++){
+			buffer.put(bytemap.get(i).byteValue());
+		}
+	}
+
+	
+	
+	
+	
+	
+	
 	public void readRecordFromBuffer(Record r, byte[] bufferPage,int offset) {
 		RelDefShema schema = relDef.getrelDef();
 		
@@ -250,45 +317,16 @@ public class HeapFile {
 
 
 
-	public void insertRecordInPage(Record r, PageId page) throws IOException {
-		byte[] bufferPage = BufferManager.getPage(page);
-		
-		Bytemap bitMap = new Bytemap();
-		
-		readPageBitmapInfo(bufferPage, bitMap);
-		
-		ArrayList<Byte> slotStatus = bitMap.getIndiceDuSlot();
-
-
-		int caseIdX = slotStatus.indexOf(new Byte((byte)0));
-		
-		if(caseIdX == -1) {
-			BufferManager.freePage(page, 0);
-		}
-		else {
-			int slotCount = relDef.getslotCount();
-			int recordSize = relDef.getrecordSize();
-
-
-			writeRecordInBuffer(r, bufferPage, slotCount + caseIdX*recordSize);
-
-
-			bitMap.setStatusOccup(caseIdX);
-			
-			writePageBitmapInfo(bufferPage, bitMap);
-			
-			BufferManager.freePage(page, 1);
-		}
-	}
 	
-	public void insertRecord(Record r) throws IOException {
-		PageId pageWhereRecordSaved = getFreePageId();
-		insertRecordInPage(r, pageWhereRecordSaved);
-		
-		updateHeaderWithTakenSlot(pageWhereRecordSaved);
-	}
+	
 
 
+	
+	
+	
+	
+	
+	
 	public void printAllRecords() throws IOException {
 
 		int fileIdHP = relDef.getfileIdx();
@@ -310,17 +348,17 @@ public class HeapFile {
 
 			byte[] bufferPageCourante = BufferManager.getPage(pageCourante);
 			
-			Bytemap bitmapPageCourante = new Bytemap();
-			readPageBitmapInfo(bufferPageCourante, bitmapPageCourante);
+			Bytemap bytemapPageCourante = new Bytemap();
+			readPagebytemapInfo(bufferPageCourante, bytemapPageCourante);
 			
-			ArrayList<Byte> slotStatusPageCourante = bitmapPageCourante.getIndiceDuSlot();
+			ArrayList<Byte> indiceSlotPageCourante = bytemapPageCourante.getIndiceDuSlot();
 			
-			for(int j = 0; j<slotStatusPageCourante.size(); j++) {
-				if(slotStatusPageCourante.get(j).byteValue() == (byte)1) {
-					int caseIdX = j;
+			for(int j = 0; j<indiceSlotPageCourante.size(); j++) {
+				if(indiceSlotPageCourante.get(j).byteValue() == (byte)1) {
+					int indiceIdx = j;
 
 					Record recordToPrint = new Record();
-					readRecordFromBuffer(recordToPrint, bufferPageCourante, slotCount + caseIdX*recordSize);
+					readRecordFromBuffer(recordToPrint, bufferPageCourante, slotCount + indiceIdx*recordSize);
 					System.out.println(recordToPrint.toString());
 					totalRecordPrinted++;
 				}
@@ -353,17 +391,17 @@ public class HeapFile {
 
 			byte[] bufferPageCourante = BufferManager.getPage(pageCourante);
 			
-			Bytemap bitmapPageCourante = new Bytemap();
-			readPageBitmapInfo(bufferPageCourante, bitmapPageCourante);
+			Bytemap bytemapPageCourante = new Bytemap();
+			readPagebytemapInfo(bufferPageCourante, bytemapPageCourante);
 			
-			ArrayList<Byte> slotStatusPageCourante = bitmapPageCourante.getIndiceDuSlot();
+			ArrayList<Byte> indiceSlotPageCourante = bytemapPageCourante.getIndiceDuSlot();
 			
-			for(int j = 0; j<slotStatusPageCourante.size(); j++) {
-				if(slotStatusPageCourante.get(j).byteValue() == (byte)1) {
-					int caseIdX = j;
+			for(int j = 0; j<indiceSlotPageCourante.size(); j++) {
+				if(indiceSlotPageCourante.get(j).byteValue() == (byte)1) {
+					int indiceIdx = j;
 
 					Record recordToPrint = new Record();
-					readRecordFromBuffer(recordToPrint, bufferPageCourante, slotCount + caseIdX*recordSize);
+					readRecordFromBuffer(recordToPrint, bufferPageCourante, slotCount + indiceIdx*recordSize);
 
 					if(recordToPrint.getvalues().get(indiceColonne-1).equals(condition)) {
 						System.out.println(recordToPrint.toString());
@@ -399,17 +437,17 @@ public class HeapFile {
 
 			byte[] bufferPageCourante = BufferManager.getPage(pageCourante);
 			
-			Bytemap bitmapPageCourante = new Bytemap();
-			readPageBitmapInfo(bufferPageCourante, bitmapPageCourante);
+			Bytemap bytemapPageCourante = new Bytemap();
+			readPagebytemapInfo(bufferPageCourante, bytemapPageCourante);
 			
-			ArrayList<Byte> slotStatusPageCourante = bitmapPageCourante.getIndiceDuSlot();
+			ArrayList<Byte> indiceSlotPageCourante = bytemapPageCourante.getIndiceDuSlot();
 			
-			for(int j = 0; j<slotStatusPageCourante.size(); j++) {
-				if(slotStatusPageCourante.get(j).byteValue() == (byte)1) {
-					int caseIdX = j;
+			for(int j = 0; j<indiceSlotPageCourante.size(); j++) {
+				if(indiceSlotPageCourante.get(j).byteValue() == (byte)1) {
+					int indiceIdx = j;
 
-					Record recordToAdd = new Record(pageCourante,slotCount + caseIdX*recordSize);
-					readRecordFromBuffer(recordToAdd, bufferPageCourante, slotCount + caseIdX*recordSize);
+					Record recordToAdd = new Record(pageCourante,slotCount + indiceIdx*recordSize);
+					readRecordFromBuffer(recordToAdd, bufferPageCourante, slotCount + indiceIdx*recordSize);
 					listRecords.add(recordToAdd);
 				}
 			}
@@ -431,17 +469,17 @@ public class HeapFile {
 
 		byte[] bufferPage = BufferManager.getPage(page);
 			
-		Bytemap bitmapPage = new Bytemap();
-		readPageBitmapInfo(bufferPage, bitmapPage);
+		Bytemap bytemapPage = new Bytemap();
+		readPagebytemapInfo(bufferPage, bytemapPage);
 			
-		ArrayList<Byte> slotStatusPage = bitmapPage.getIndiceDuSlot();
+		ArrayList<Byte> indiceSlotPage = bytemapPage.getIndiceDuSlot();
 			
-		for(int j = 0; j<slotStatusPage.size(); j++) {
-			if(slotStatusPage.get(j).byteValue() == (byte)1) {
-				int caseIdX = j;
+		for(int j = 0; j<indiceSlotPage.size(); j++) {
+			if(indiceSlotPage.get(j).byteValue() == (byte)1) {
+				int indiceIdx = j;
 
-				Record recordToAdd = new Record(page,slotCount + caseIdX*recordSize);
-				readRecordFromBuffer(recordToAdd, bufferPage, slotCount + caseIdX*recordSize);
+				Record recordToAdd = new Record(page,slotCount + indiceIdx*recordSize);
+				readRecordFromBuffer(recordToAdd, bufferPage, slotCount + indiceIdx*recordSize);
 				listRecords.add(recordToAdd);
 			}
 		}

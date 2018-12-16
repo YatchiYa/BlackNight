@@ -16,9 +16,9 @@ public class AppLaunch {
 		
 		System.out.println("Feel welcome to mini_SGBD");
 		System.out.println(" tappez votre commande ");
-		System.out.println("(\\_/)");
-		System.out.println("( •,•)");
-		System.out.println("(\")_(\")");
+		System.out.println("  \t /) /)\r\n" + 
+				" \t (+.+)\r\n" + 
+				"\t(\")_(\")");
 
 		
 		
