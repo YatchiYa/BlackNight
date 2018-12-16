@@ -31,7 +31,7 @@ public class HeapFile {
 
 
 		int nbPage = buffer.getInt();
-		hfi.setNbPagesDeDonnées(nbPage);
+		hfi.setdataPageCount(nbPage);
 
 
 		for(int i = 0; i<nbPage; i++) {
@@ -49,10 +49,10 @@ public class HeapFile {
 		ByteBuffer buffer = ByteBuffer.wrap(headerPage);
 
 
-		buffer.putInt(hfi.getNbPagesDeDonnées());
+		buffer.putInt(hfi.getdataPageCount());
 		
-		ArrayList<Integer> idxTab = hfi.getIdx_page_données();
-		ArrayList<Integer> nbSlotTab = hfi.getNbSlotsRestantDisponiblesSurLaPage();
+		ArrayList<Integer> idxTab = hfi.getpageIdx();
+		ArrayList<Integer> nbSlotTab = hfi.getfreeSlots();
 
 
 		for(int i = 0; i<idxTab.size(); i++) {
@@ -115,7 +115,7 @@ public class HeapFile {
 
 
 		Integer idChercher = new Integer(pid.getPageIdx());
-		boolean find = hpi.decrementNbSlotsRestantDisponiblesSurLaPage(idChercher);
+		boolean find = hpi.decrementfreeSlots(idChercher);
 		if(!find) {
 			System.out.println("*** Erreur ! Cette page n'est pas présente ! ***\n");
 			BufferManager.freePage(headerPage, 0);
@@ -256,8 +256,8 @@ public class HeapFile {
 		HeaderPageInfo hpi = new HeaderPageInfo();
 		getHeaderPageInfo(hpi);
 		
-		ArrayList<Integer> idxList = hpi.getIdx_page_données();
-		ArrayList<Integer> slotDispoList = hpi.getNbSlotsRestantDisponiblesSurLaPage();
+		ArrayList<Integer> idxList = hpi.getpageIdx();
+		ArrayList<Integer> slotDispoList = hpi.getfreeSlots();
 		
 		for(int i = 0;i<idxList.size();i++) {
 			int idx = idxList.get(i).intValue();
@@ -320,7 +320,7 @@ public class HeapFile {
 		HeaderPageInfo hpi = new HeaderPageInfo();
 		getHeaderPageInfo(hpi);
 		
-		ArrayList<Integer> listIdxPage = hpi.getIdx_page_données();
+		ArrayList<Integer> listIdxPage = hpi.getpageIdx();
 		
 		for(int i=0; i<listIdxPage.size(); i++) {
 			int idxPageCourante = listIdxPage.get(i).intValue();
@@ -362,7 +362,7 @@ public class HeapFile {
 		HeaderPageInfo hpi = new HeaderPageInfo();
 		getHeaderPageInfo(hpi);
 		
-		ArrayList<Integer> listIdxPage = hpi.getIdx_page_données();
+		ArrayList<Integer> listIdxPage = hpi.getpageIdx();
 		
 		for(int i=0; i<listIdxPage.size(); i++) {
 			int idxPageCourante = listIdxPage.get(i).intValue();
@@ -407,7 +407,7 @@ public class HeapFile {
 		HeaderPageInfo hpi = new HeaderPageInfo();
 		getHeaderPageInfo(hpi);
 		
-		ArrayList<Integer> listIdxPage = hpi.getIdx_page_données();
+		ArrayList<Integer> listIdxPage = hpi.getpageIdx();
 		
 		for(int i=0; i<listIdxPage.size(); i++) {
 			int idxPageCourante = listIdxPage.get(i).intValue();
@@ -487,8 +487,8 @@ public class HeapFile {
 		HeaderPageInfo hpi2 = new HeaderPageInfo();
 		relFind2.getHeaderPageInfo(hpi2);
 		
-		ArrayList<Integer> listIdxPage1 = hpi1.getIdx_page_données();
-		ArrayList<Integer> listIdxPage2 = hpi2.getIdx_page_données();
+		ArrayList<Integer> listIdxPage1 = hpi1.getpageIdx();
+		ArrayList<Integer> listIdxPage2 = hpi2.getpageIdx();
 
 
 		for(int i=0; i<listIdxPage1.size(); i++) {

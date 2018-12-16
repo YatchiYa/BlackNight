@@ -3,73 +3,78 @@ package shema;
 import java.util.ArrayList;
 
 public class HeaderPageInfo {
-	private int NbPagesDeDonnées;
-	private ArrayList<Integer> Idx_page_données;
-	private ArrayList<Integer> NbSlotsRestantDisponiblesSurLaPage;
+	private int dataPageCount;
+	private ArrayList<Integer> pageIdx;
+	private ArrayList<Integer> freeSlots;
 	
-	public HeaderPageInfo(int NbPagesDeDonnées) {
-		this.NbPagesDeDonnées = NbPagesDeDonnées;
-		Idx_page_données = new ArrayList<Integer>(NbPagesDeDonnées);
-		NbSlotsRestantDisponiblesSurLaPage = new ArrayList<Integer>(NbPagesDeDonnées);
+	public HeaderPageInfo(int dataPageCount) {
+		this.dataPageCount = dataPageCount;
+		pageIdx = new ArrayList<Integer>(dataPageCount);
+		freeSlots = new ArrayList<Integer>(dataPageCount);
 	}
-	
 	public HeaderPageInfo() {
+		this.dataPageCount = 0;
+		pageIdx = new ArrayList<Integer>(dataPageCount);
+		freeSlots = new ArrayList<Integer>(dataPageCount);
+	}
+	
+	/*public HeaderPageInfo() {
 		this(0);
-	}
+	}*/
 	
 	
 
-	public int getNbPagesDeDonnées() {
-		return NbPagesDeDonnées;
+	public int getdataPageCount() {
+		return dataPageCount;
 	}
 
-	public void setNbPagesDeDonnées(int NbPagesDeDonnées) {
-		this.NbPagesDeDonnées = NbPagesDeDonnées;
+	public void setdataPageCount(int dataPageCount) {
+		this.dataPageCount = dataPageCount;
 	}
 	public void incrementNbPage() {
-		NbPagesDeDonnées++;
+		dataPageCount++;
 	}
 	
 	
 	
 	
 	
-	public ArrayList<Integer> getIdx_page_données() {
-		return Idx_page_données;
+	public ArrayList<Integer> getpageIdx() {
+		return pageIdx;
 	}
 
-	public void setIdx_page_données(ArrayList<Integer> Idx_page_données) {
-		this.Idx_page_données = Idx_page_données;
+	public void setpageIdx(ArrayList<Integer> pageIdx) {
+		this.pageIdx = pageIdx;
 	}
 	
 	public void adddx_page_données(Integer i) {
-		Idx_page_données.add(i);
+		pageIdx.add(i);
 	}
 
 	
 	
-	public ArrayList<Integer> getNbSlotsRestantDisponiblesSurLaPage() {
-		return NbSlotsRestantDisponiblesSurLaPage;
+	public ArrayList<Integer> getfreeSlots() {
+		return freeSlots;
 	}
 
-	public void setNbSlotsRestantDisponiblesSurLaPage(ArrayList<Integer> NbSlotsRestantDisponiblesSurLaPage) {
-		this.NbSlotsRestantDisponiblesSurLaPage = NbSlotsRestantDisponiblesSurLaPage;
+	public void setfreeSlots(ArrayList<Integer> freeSlots) {
+		this.freeSlots = freeSlots;
 	}
 	
 	public void addNbSlotDispo(Integer i) {
-		NbSlotsRestantDisponiblesSurLaPage.add(i);
+		freeSlots.add(i);
 	}
 	
-	public boolean decrementNbSlotsRestantDisponiblesSurLaPage(Integer i) {
+	public boolean decrementfreeSlots(Integer i) {
 		boolean find = false;
 		
-		int indice = Idx_page_données.indexOf(i);
+		int indice = pageIdx.indexOf(i);
 		
 		if(indice!=-1) {
-			int nb = NbSlotsRestantDisponiblesSurLaPage.get(indice).intValue();
+			int nb = freeSlots.get(indice).intValue();
 			nb--;
 			Integer newNb = new Integer(nb);
-			NbSlotsRestantDisponiblesSurLaPage.set(indice, newNb);
+			freeSlots.set(indice, newNb);
 			find = true;
 		}
 		
