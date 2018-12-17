@@ -20,6 +20,7 @@ public class DBManager{
 
 	private static Commande cmd = new Commande();
 	private static DBDef db;
+	private static FileManager fileManager;
 	private static ArrayList<HeapFile> listeHeapFile;
 
 	/**
