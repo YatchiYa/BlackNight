@@ -21,7 +21,6 @@ public class DBManager{
 	private static Commande cmd = new Commande();
 	private static DBDef db;
 	private static FileManager fileManager;
-	private static ArrayList<HeapFile> listeHeapFile;
 
 	/**
 	 * 
@@ -68,20 +67,13 @@ public class DBManager{
 
 		db.incrCpt();
 
-		HeapFile heapFile = new HeapFile(newRelDef);
-		listeHeapFile.add(heapFile);
 		
 		try {
-			heapFile.createNewOnDisk();
+			fileManager.createNewHeapFile(newRelDef);
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
 /*
-		try {
-			DiskManager.createFile(newRelDef.getfileIdx());
-		}catch(IOException e) {
-			e.printStackTrace();
-		}
 		
  		*/
 	}
@@ -91,16 +83,17 @@ public class DBManager{
 
 	public static void init() throws FileNotFoundException, IOException, ClassNotFoundException { 
 		db = new DBDef();
+		fileManager = new FileManager();
 		db.init();
-
-		refreshHeapFiles();
-
+		FileManager.init();
+		
+		
 	}
+
 
 	public static void clean() throws FileNotFoundException, ClassNotFoundException, IOException {
 
 		BufferManager.flushAll();
-
 
 		File catalogDef = new File(Constants.catalogRep);
 		if(catalogDef.delete()) {
@@ -111,7 +104,7 @@ public class DBManager{
 		}
 
 
-		for(int i = 0; i<listeHeapFile.size(); i++) {
+		for(int i = 0; i<FileManager.getListeHeapFile().size(); i++) {
 			File dataRf = new File("."+File.separatorChar+"DB"+File.separatorChar+"Data_"+i+".rf");
 			if(dataRf.delete()) {
 				System.out.println("Suppression ... Relation supprimée !");
@@ -121,18 +114,12 @@ public class DBManager{
 
 		db.raz();
 
-		listeHeapFile = new ArrayList<HeapFile>(0);
+		FileManager.setListeHeapFile(new ArrayList<HeapFile>(0));
 		
 		System.out.println("Suppression ... La base de données a été supprimée avec succès !\n");
 	}
 
 
-	public static void refreshHeapFiles() {
-		listeHeapFile = new ArrayList<HeapFile>(0);
-		for(RelDef r : db.getlistRelDef()) {
-			listeHeapFile.add(new HeapFile(r));
-		}
-	}
 
 
 	public static void finish() throws FileNotFoundException, IOException {
@@ -147,29 +134,27 @@ public class DBManager{
 	
 	
 	public static void insert(String nomRelation,ArrayList<String> listValeurs) throws IOException {
-		Record r = new Record();
-		r.setValue(listValeurs);
+		Record record = new Record();
+		record.setValue(listValeurs);
 		
-		ArrayList<RelDef> listRelation = db.getlistRelDef();
-		RelDef relFind = null;
-		boolean find = false;
+		ArrayList<RelDef> listeDeRelation = db.getlistRelDef();
+		RelDef pointerRelation = null;
 		
-		for(int i = 0;i<listRelation.size();i++) {
-			String nameRel = listRelation.get(i).getrelDef().getnomDeRelation();
-			if(nomRelation.equals(nameRel)) {
-				relFind = listRelation.get(i);
-				find = true;
+		for(int i = 0;i<listeDeRelation.size();i++) {
+			String nomDeRelation = listeDeRelation.get(i).getrelDef().getnomDeRelation();
+			if(nomRelation.equals(nomDeRelation)) {
+				pointerRelation = listeDeRelation.get(i);
 				break;
 			}
 		}
 		
-		if(find) {
-			HeapFile hf = new HeapFile(relFind);
-			hf.insertRecord(r);
+		try {
+			fileManager.insertRecordInRelation(pointerRelation, record);
+			
+		}catch(Exception e) {
+			e.printStackTrace();
 		}
-		else {
-			System.out.println("*** Erreur ! Ce nom de relation n'existe pas ! Veuillez ressayer. ***\n");
-		}	
+		
 	}
 
 	
@@ -190,13 +175,5 @@ public class DBManager{
 		DBManager.db = db;
 	}
 
-	public static void setListeHeapFile(ArrayList<HeapFile> listeHeapFile) {
-		DBManager.listeHeapFile = listeHeapFile;
-	}
-
-	public static ArrayList<HeapFile> getListeHeapFile(){
-		return listeHeapFile;
-	}
-	
 	
 }

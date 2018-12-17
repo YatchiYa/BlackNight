@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import shema.DBDef;
+import shema.Record;
 import shema.RelDef;
+import shema.Rid;
 
 public class FileManager {
 	// singleton
@@ -15,9 +17,8 @@ public class FileManager {
 	
 	
 	public static void init() {
-		DBDef db = new DBDef();
 		listeHeapFile = new ArrayList<HeapFile>(0);
-		for(RelDef r : db.getlistRelDef()) {
+		for(RelDef r : DBManager.getDb().getlistRelDef()) {
 			listeHeapFile.add(new HeapFile(r));
 		}
 	}
@@ -26,6 +27,26 @@ public class FileManager {
 		HeapFile heapFile = new HeapFile(iRelDef);
 		listeHeapFile.add(heapFile);
 		heapFile.createNewOnDisk();
+	}
+	
+	
+	/**
+	 * 
+	 * @param iRelationName
+	 * @param iRecord
+	 * @return
+	 * @throws IOException
+	 */
+	public Rid insertRecordInRelation(RelDef iRelationName, Record iRecord) throws IOException {
+		Rid rid = new Rid();
+		
+		for (HeapFile hf : listeHeapFile) {
+			if (hf.getrelDef().equals(iRelationName)) {
+				rid = hf.insertRecord(iRecord);
+				return rid;	
+			}
+		}
+		return null;			
 	}
 	
 	

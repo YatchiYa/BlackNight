@@ -499,9 +499,6 @@ public class HeapFile {
 	public void setrelDef(RelDef relDef) {
 		this.relDef = relDef;
 	}
-	public RelDef getRelDef() {
-		return relDef;
-	}
 
 
 

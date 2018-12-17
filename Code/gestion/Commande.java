@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import ManagerFolder.DBManager;
+import ManagerFolder.FileManager;
 import ManagerFolder.HeapFile;
 import shema.RelDefShema;
 import constants.Constants;
@@ -26,35 +27,114 @@ public class Commande {
 		case "create":
 			System.out.println("create methode");
 			Create(c);
-			System.out.print("\\");
-			System.out.println("(*-*)/");
 			
 			
 			
 			break;
-		case "insert" : inert(c);	
+		case "insert" : 
+			System.out.println("insert methode");
+			inert(c);	
 			break;
-		case "selectall" : selectAll(c);	
+		case "selectall" : 
+			System.out.println("selectAll methode");
+			selectAll(c);	
 			break;
-		case "clean" : clean(c);	
+		case "clean" : 
+			System.out.println("clean methode");
+			clean(c);	
 		break;
-		case "select" : select(c);	
+		case "select" : 
+			System.out.println("select methode");
+			select(c);	
 		break;
-		case "fill" : fill(c);
+		case "fill" : 
+			System.out.println("fill methode");
+			fill(c);
 		break;
 		default: 
-			System.out.println("don t know the commande ");
+			System.out.println("don't know the commande ");
 			break;
 		}
 		
 		return c;
 	}
 
+
+		/**
+		 * 
+		 * @param command
+		 * @throws IOException
+		 */
+	public static void Create(String commande) throws IOException{
+		
+		RelDefShema relation = new RelDefShema();
+	
+		try {
+			relation = definitionDeLaRelation(commande.substring(7));
+		}catch(IllegalArgumentException e) {
+			System.out.println("\n*** " + e.getMessage()+ " ***\n");
+		}
+		DBManager.createRelation(relation.getnomDeRelation(), relation.getnbDeColonne(), relation.gettypeDeColonne());
+	}
+	
+	
+/**
+ * 
+ * @param command
+ */
+	public static void inert(String commande) {
+		
+		StringTokenizer st = new StringTokenizer(commande," ");
+		
+		st.nextToken();
+		
+		String nomDeRelation = st.nextToken();
+		
+		ArrayList<String> listeDeRelation = new ArrayList<String>(0);
+		
+		while(st.hasMoreTokens()) {
+			listeDeRelation.add(st.nextToken());
+		}
+		try {
+			DBManager.insert(nomDeRelation, listeDeRelation);
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+		/**
+		 * 
+		 * @param command
+		 */
+	public static void select(String commande) {
+		
+		StringTokenizer st = new StringTokenizer(commande.substring(7), " ");
+		String nomRelation = st.nextToken();
+		int indiceCol = Integer.parseInt(st.nextToken());
+		String condition = st.nextToken();
+		
+		ArrayList<HeapFile> list = FileManager.getListeHeapFile();
+		HeapFile relFind = findHeapFile(list,nomRelation);
+		
+		if(relFind != null) {
+			try {
+				relFind.printAllRecordsWithFilter(indiceCol, condition);
+			}catch(IOException e) {
+				System.out.println("Une erreur s'est produite lors de l'affichage des records !");
+				System.out.println("Détails : " + e.getMessage());
+			}
+		}
+		else {
+			System.out.println("*** \"" +nomRelation + "\" n'existe pas dans la base de données ! ***\n");
+		}
+	}
 	
 
+	
+	
 
 	private static void fill(String command) {
-		// TODO Auto-generated method stub
 		
 		StringTokenizer commande = new StringTokenizer(command.substring(5)," ");
 		String nomRel = commande.nextToken();
@@ -76,6 +156,9 @@ public class Commande {
 		}
 	}
 
+	
+	
+	
 	public static ArrayList<String> extractContenuCSV(String nomFichier) throws IOException{
 		
 		ArrayList<String> contenuCSV = new ArrayList<String>();
@@ -94,42 +177,9 @@ public class Commande {
 	}
 
 
-	public static void select(String command) {
-		
-		StringTokenizer st = new StringTokenizer(command.substring(7), " ");
-		String nomRelation = st.nextToken();
-		int indiceCol = Integer.parseInt(st.nextToken());
-		String condition = st.nextToken();
-		
-		ArrayList<HeapFile> list = DBManager.getListeHeapFile();
-		HeapFile relFind = findHeapFile(list,nomRelation);
-		
-		if(relFind != null) {
-			try {
-				relFind.printAllRecordsWithFilter(indiceCol, condition);
-			}catch(IOException e) {
-				System.out.println("Une erreur s'est produite lors de l'affichage des records !");
-				System.out.println("Détails : " + e.getMessage());
-			}
-		}
-		else {
-			System.out.println("*** \"" +nomRelation + "\" n'existe pas dans la base de données ! ***\n");
-		}
-	}
 	
 	
 	
-	public static void Create(String command) throws IOException{
-		
-		RelDefShema relation = new RelDefShema();
-	
-		try {
-			relation = extractRel(command.substring(7));
-		}catch(IllegalArgumentException e) {
-			System.out.println("\n*** " + e.getMessage()+ " ***\n");
-		}
-		DBManager.createRelation(relation.getnomDeRelation(), relation.getnbDeColonne(), relation.gettypeDeColonne());
-	}
 	
 
 	public static void clean(String command) {
@@ -142,26 +192,11 @@ public class Commande {
 		}
 	}
 	
-	public static void inert(String command) {
-		
-		StringTokenizer st = new StringTokenizer(command," ");
-		st.nextToken();
-		String name = st.nextToken();
-		ArrayList<String> l = new ArrayList<String>(0);
-		while(st.hasMoreTokens()) {
-			l.add(st.nextToken());
-		}
-		try {
-			DBManager.insert(name, l);
-		}catch(IOException e) {
-			
-		}
-	}
 	
 	public static void selectAll(String command) {
 		
 		String nomRelation = command.substring(10);
-		ArrayList<HeapFile> list = DBManager.getListeHeapFile();
+		ArrayList<HeapFile> list = FileManager.getListeHeapFile();
 		HeapFile relFind = findHeapFile(list,nomRelation);
 		
 		if(relFind != null) {
@@ -179,33 +214,6 @@ public class Commande {
 	
 
 	
-	public static RelDefShema extractRel(String chaine) throws IllegalArgumentException{
-		//commande de l'user
-		String commande = chaine.trim();
-		
-		//on récupère tous les mots séparés par un espace dans la commande de l'user
-		StringTokenizer st = new StringTokenizer(commande," ");
-		
-		RelDefShema relation = new RelDefShema();
-		ArrayList<String> typeCol = new ArrayList<String>(0);
-		
-		String nom = st.nextToken();
-		relation.setnomDeRelation(nom);
-		int nbCol = Integer.parseInt(st.nextToken());
-		relation.setnbDeColonne(nbCol);
-		while (st.hasMoreTokens()) {
-			String type = st.nextToken().toLowerCase();
-			if(type.equals("int") || type.equals("float") || type.contains("string")) {
-				typeCol.add(type);
-			}
-			else {
-				throw new IllegalArgumentException("Ce type n'est pas autorisé !");
-			}
-		}
-		relation.settypeDeColonne(typeCol);
-		
-		return relation;
-	}
 	
 	
 	public static void extractRecords(ArrayList<String> contenuCSV, String nomRel) throws IOException {
@@ -236,4 +244,42 @@ public class Commande {
 		return relFind;
 	}
 	
+	
+	
+	
+	/**
+	 * 
+	 * @param commandeComplete
+	 * @return
+	 * @throws IllegalArgumentException
+	 */
+	public static RelDefShema definitionDeLaRelation(String commandeComplete){
+		String commande = commandeComplete.trim();
+		
+		StringTokenizer st = new StringTokenizer(commande," ");
+		
+		RelDefShema relDef = new RelDefShema();
+		ArrayList<String> typeDeColonne = new ArrayList<String>(0);
+		
+		String nomDeRelation = st.nextToken();
+		
+		relDef.setnomDeRelation(nomDeRelation);
+		
+		int nbDeColonne = Integer.parseInt(st.nextToken());
+		
+		relDef.setnbDeColonne(nbDeColonne);
+		
+		while (st.hasMoreTokens()) {
+			String typeDeColonnes = st.nextToken().toLowerCase();
+			if(typeDeColonnes.equals("int") || typeDeColonnes.equals("float") || typeDeColonnes.contains("string")) {
+				typeDeColonne.add(typeDeColonnes);
+			}
+			else {
+				System.out.println("ERROR");
+			}
+		}
+		relDef.settypeDeColonne(typeDeColonne);
+		
+		return relDef;
+	}
 }
