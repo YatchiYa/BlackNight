@@ -9,7 +9,7 @@ import shema.RelDef;
 public class HeapFileTreatment {
 	
 	
-	public void getHPI(HeaderPageInfo hpi, RelDef relDef) throws IOException {
+	public static void getHPI(HeaderPageInfo hpi, RelDef relDef) throws IOException {
 
 		HeaderPageInfo headerPageInfo = new HeaderPageInfo();
 		int fileHeaderPage = relDef.getfileIdx();
@@ -24,7 +24,7 @@ public class HeapFileTreatment {
 		BufferManager.freePage(headerPage, 0);
 	}
 	
-	public void miseAjourHPI(PageId newPageId, RelDef relDef) throws IOException {
+	public static void miseAjourHPI(PageId newPageId, RelDef relDef) throws IOException {
 
 		HeaderPageInfo headerPageInfo = new HeaderPageInfo();
 		int fileHeaderPage = relDef.getfileIdx();

@@ -50,6 +50,7 @@ public class DBDef{
 				FileOutputStream fos = new FileOutputStream(fichier);
 				ObjectOutputStream oos =  new ObjectOutputStream(fos);
 				oos.writeObject(DBManager.getDb());
+				oos.close();
 		}
 		catch(Exception e) {
 			e.printStackTrace();

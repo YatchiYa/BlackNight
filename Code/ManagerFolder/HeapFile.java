@@ -18,8 +18,8 @@ public class HeapFile {
 	private HeaderPageInfo headerPageInfo;
 	
 	
-	public HeapFile(RelDef relDef) {
-		this.relDef = relDef;
+	public HeapFile(RelDef relDefx) {
+		relDef = relDefx;
 		this.headerPageInfo = new HeaderPageInfo();
 	}
 
@@ -39,14 +39,13 @@ public class HeapFile {
 		
 		try {
 			DiskManager.createFile(relDef.getfileIdx());
+			System.out.println( "42 " + relDef.getfileIdx());
+			DiskManager.addPage(relDef.getfileIdx());
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
-		try {
-			DiskManager.addPage(relDef.getfileIdx());
-	}catch(IOException e) {
-		e.printStackTrace();
-	}
+		
+	
 		int fileIdx = relDef.getfileIdx();
 		PageId hp = new PageId(fileIdx, 0);
 		
@@ -68,8 +67,7 @@ public class HeapFile {
 		int fileIndex = relDef.getfileIdx();
 		
 		HeaderPageInfo headerPageInfo_2 = new HeaderPageInfo();
-		HeapFileTreatment hfm = new HeapFileTreatment();
-		hfm.getHPI(headerPageInfo_2, relDef);
+		HeapFileTreatment.getHPI(headerPageInfo_2, relDef);
 		
 		ArrayList<Integer> listIndex = headerPageInfo.getpageIdx();
 		ArrayList<Integer> freeSlot = headerPageInfo.getfreeSlots();
@@ -84,7 +82,7 @@ public class HeapFile {
 		}
 		PageId newPage = DiskManager.addPage(relDef.getfileIdx());
 		
-		hfm.miseAjourHPI(newPage,relDef);
+		HeapFileTreatment.miseAjourHPI(newPage,relDef);
 		
 		return newPage;
 	}
@@ -291,15 +289,14 @@ public class HeapFile {
 	 * @return
 	 * @throws IOException
 	 */
-	public ArrayList<Record> getRecordsOnPage(PageId iPageId) throws IOException {
+	public static ArrayList<Record> getRecordsOnPage(PageId iPageId) throws IOException {
 		ArrayList<Record> listeDesRecords = new ArrayList<Record>(0);
 	
 		int slotCpt = relDef.getslotCount();
 		int sizeOfRecord = relDef.getrecordSize();
 		
 		HeaderPageInfo hpi = new HeaderPageInfo();
-		HeapFileTreatment hfm = new HeapFileTreatment();
-		hfm.getHPI(hpi, relDef);
+		HeapFileTreatment.getHPI(hpi, relDef);
 
 		byte[] bufferPage = BufferManager.getPage(iPageId);
 			
@@ -355,15 +352,15 @@ public class HeapFile {
 	}
 
 
-	public void setrelDef(RelDef relDef) {
-		this.relDef = relDef;
+	public static void setrelDef(RelDef relDefx) {
+		relDef = relDefx;
 	}
 
 
 
 
-	public void setRelDef(RelDef relDef) {
-		this.relDef = relDef;
+	public static void setRelDef(RelDef relDefx) {
+		relDef = relDefx;
 	}
 
 

@@ -1,15 +1,10 @@
 package ManagerFolder;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-
 import gestion.Commande;
 import shema.Bytemap;
 import shema.DBDef;
@@ -68,12 +63,17 @@ public class DBManager{
 		newRelDef.setslotCount(slotCount);
 
 		db.AddRelation(newRelDef);
-
 		db.incrCpt();
-
 		
 		try {
-			fileManager.createNewHeapFile(newRelDef);
+			DiskManager.createFile(newRelDef.getfileIdx());
+		}catch(IOException e) {
+			System.out.println("*** Une ereur s'est produite lors de la création du fichier ! ***");
+			System.out.println("Détails : " + e.getMessage());
+		}
+		
+		try {
+			FileManager.createNewHeapFile(newRelDef);
 		}catch(IOException e) {
 			e.printStackTrace();
 		}
@@ -184,8 +184,7 @@ public class DBManager{
 		
 		HeaderPageInfo headerPageInfo = new HeaderPageInfo();
 
-		HeapFileTreatment hfm = new HeapFileTreatment();
-		hfm.getHPI(headerPageInfo, relDef);
+		HeapFileTreatment.getHPI(headerPageInfo, relDef);
 		
 		ArrayList<Integer> listPage = headerPageInfo.getpageIdx();
 		
@@ -236,8 +235,7 @@ public class DBManager{
 		int tot = 0;
 		
 		HeaderPageInfo headerPageInfo = new HeaderPageInfo();
-		HeapFileTreatment hfm = new HeapFileTreatment();
-		hfm.getHPI(headerPageInfo, relDef);
+		HeapFileTreatment.getHPI(headerPageInfo, relDef);
 		
 		ArrayList<Integer> listPage = headerPageInfo.getpageIdx();
 		

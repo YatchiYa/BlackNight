@@ -1,12 +1,10 @@
 package app;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Scanner;
 
 import ManagerFolder.DBManager;
 import constants.Constants;
-import gestion.Commande;
 
 
 public class AppLaunch {
@@ -23,8 +21,7 @@ public class AppLaunch {
 		
 		
 		
-		DBManager dbManager = new DBManager();
-		dbManager.init();
+		DBManager.init();
 		
 		
 		
@@ -44,11 +41,11 @@ public class AppLaunch {
 			}
 			else {
 				
-				dbManager.processCommande(commande);
+				DBManager.processCommande(commande);
 			}
 			
 		}while(!commande.equals(Constants.exit));	
-
+		sc.close();
 		
 	}
 

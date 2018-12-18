@@ -1,10 +1,9 @@
 package shema;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 
-public class RelDefShema implements Serializable{
+public class RelDefShema{
 
 	private String nomDeRelation;
 	private int nbDeColonne;

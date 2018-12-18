@@ -4,8 +4,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.StringTokenizer;
 
 import ManagerFolder.DBManager;
@@ -16,7 +14,7 @@ import constants.Constants;
 
 public class Commande {
 	
-	public static String listCommande(String c) throws IOException {		
+	public String listCommande(String c) throws IOException {		
 		String action;
 		 
 		StringTokenizer st = new StringTokenizer(c," ");
@@ -48,6 +46,10 @@ public class Commande {
 			System.out.println("Appel A la methode fill ");
 			fill(c);
 		break;
+		case "join" : 
+			System.out.println("Appel A la methode join ");
+			join(c);
+		break;
 		default: 
 			System.out.println("don't know the commande ");
 			break;
@@ -69,7 +71,7 @@ public class Commande {
 		try {
 			relation = definitionDeLaRelation(commande.substring(7));
 		}catch(IllegalArgumentException e) {
-			System.out.println("\n*** " + e.getMessage()+ " ***\n");
+			e.printStackTrace();
 		}
 		DBManager.createRelation(relation.getnomDeRelation(), relation.getnbDeColonne(), relation.gettypeDeColonne());
 	}
@@ -176,13 +178,16 @@ public class Commande {
 		
 		String nomDeLaRelation = commande.substring(10);
 		ArrayList<HeapFile> listHeapFile = FileManager.getListeHeapFile();
+		System.out.println(" 181" +FileManager.getListeHeapFile());
 		HeapFile iSrelation = null;
 						
 		for(int i =0 ;i<listHeapFile.size();i++) {
 			String nomRelationC = listHeapFile.get(i).getrelDef().getrelDef().getnomDeRelation();
 			HeapFile relationC = listHeapFile.get(i);
+			System.out.println(" 187 -> "+ nomRelationC + " --> " + relationC);
 			if(nomRelationC.equals(nomDeLaRelation)) {
 				iSrelation = relationC;
+				System.out.println(" 189 " + iSrelation);
 			}
 		}
 		
@@ -194,7 +199,7 @@ public class Commande {
 			}
 		}
 		else {
-			System.out.println("ERROR");
+			System.out.println("199 ERROR");
 		}
 	}
 	
@@ -231,6 +236,58 @@ public class Commande {
 			System.out.println("ERROR");
 		}
 	}
+
+
+	
+	public static void join(String command) {
+			
+		StringTokenizer st = new StringTokenizer(command.substring(4), " ");
+		String nomRelation1 = st.nextToken();
+		String nomRelation2 = st.nextToken();
+		int indiceCol1 = Integer.parseInt(st.nextToken());
+		int indiceCol2 = Integer.parseInt(st.nextToken());
+		
+		//Recuperer la list des heapfile puis chercher le nom de la rel
+		ArrayList<HeapFile> list = FileManager.getListeHeapFile();
+		HeapFile relFind1 = null;
+				
+		for(int i =0 ;i<list.size();i++) {
+			String nomRelCourant = list.get(i).getrelDef().getrelDef().getnomDeRelation();
+			HeapFile relCourant = list.get(i);
+			if(nomRelCourant.equals(nomRelation1)) {
+				relFind1 = relCourant;
+			}
+		}
+		
+		
+		HeapFile relFind2 = null;
+		
+		for(int i =0 ;i<list.size();i++) {
+			String nomRelCourant = list.get(i).getrelDef().getrelDef().getnomDeRelation();
+			HeapFile relCourant = list.get(i);
+			if(nomRelCourant.equals(nomRelation2)) {
+				relFind2 = relCourant;
+			}
+		}
+		
+		
+		if(relFind1 != null && relFind2 != null) {
+			try {
+				//relFind1.join(relFind2, indiceCol1, indiceCol2);
+				FileManager.join(relFind1, relFind2, indiceCol1, indiceCol2);
+				
+			}catch(IOException e) {
+				System.out.println("Une erreur s'est produite lors de la jointure !");
+				System.out.println("Détails : " + e.getMessage());
+			}
+			
+		}
+		else {
+			System.out.println("*** Une des 2 relations n'existe pas dans la base de données ! ***\n");
+		}
+		
+	}
+
 
 
 		

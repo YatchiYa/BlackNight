@@ -5,7 +5,6 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import shema.Bytemap;
-import shema.DBDef;
 import shema.HeaderPageInfo;
 import shema.PageId;
 import shema.Record;
@@ -27,7 +26,7 @@ public class FileManager {
 		}
 	}
 	
-	public void createNewHeapFile(RelDef iRelDef) throws IOException{
+	public static void createNewHeapFile(RelDef iRelDef) throws IOException{
 		HeapFile heapFile = new HeapFile(iRelDef);
 		listeHeapFile.add(heapFile);
 		heapFile.createNewOnDisk();
@@ -72,8 +71,7 @@ public class FileManager {
 		int sizeOfRecord = iRelationName.getrecordSize();
 		
 		HeaderPageInfo headerPageInfo = new HeaderPageInfo();
-		HeapFileTreatment hfm = new HeapFileTreatment();
-		hfm.getHPI(headerPageInfo, iRelationName);
+		HeapFileTreatment.getHPI(headerPageInfo, iRelationName);
 		
 		ArrayList<Integer> listIdxPage = headerPageInfo.getpageIdx();
 		
@@ -127,8 +125,7 @@ public class FileManager {
 		int sizeOfRecord = iRelationName.getrecordSize();
 		
 		HeaderPageInfo headerPageInfo = new HeaderPageInfo();
-		HeapFileTreatment hfm = new HeapFileTreatment();
-		hfm.getHPI(headerPageInfo, iRelationName);
+		HeapFileTreatment.getHPI(headerPageInfo, iRelationName);
 		
 		ArrayList<Integer> listIdxPage = headerPageInfo.getpageIdx();
 		
@@ -169,6 +166,59 @@ public class FileManager {
 	
 	
 	
+	public static void join(HeapFile relFind1, HeapFile relFind2, int col1, int col2) throws IOException {
+		//on recupere les fileid des heapfiles
+		int fileIdHP1 = relFind1.getrelDef().getfileIdx();
+		int fileIdHP2 = relFind2.getrelDef().getfileIdx();
+		
+		int totalRecordPrinted = 0;
+		
+		//on recupere la header page des heapfiles
+		HeaderPageInfo hpi1 = new HeaderPageInfo();
+		HeapFileTreatment.getHPI(hpi1, relFind1.getrelDef());
+		HeaderPageInfo hpi2 = new HeaderPageInfo();
+		HeapFileTreatment.getHPI(hpi2, relFind2.getrelDef());
+		
+		ArrayList<Integer> listIdxPage1 = hpi1.getpageIdx();
+		ArrayList<Integer> listIdxPage2 = hpi2.getpageIdx();
+		
+		//boucle de la relation1
+		for(int i=0; i<listIdxPage1.size(); i++) {
+			
+			int idxPageCourante1 = listIdxPage1.get(i).intValue();
+			PageId pageCourante1 = new PageId(fileIdHP1, idxPageCourante1); 
+			
+			ArrayList<Record> listRecords1 = HeapFile.getRecordsOnPage(pageCourante1);
+			
+			//boucle de la relation2
+			for(int j=0; j<listIdxPage2.size(); j++) {
+				
+				int idxPageCourante2 = listIdxPage2.get(j).intValue();
+				PageId pageCourante2 = new PageId(fileIdHP2, idxPageCourante2); 
+				
+				ArrayList<Record> listRecords2 = HeapFile.getRecordsOnPage(pageCourante2);
+				
+				for(int h=0; h<listRecords1.size();h++) {
+					for(int k=0; k<listRecords2.size();k++) {
+						Record r1 = listRecords1.get(h);
+						Record r2 = listRecords2.get(k);
+						
+						String val1 = r1.getvalues().get(col1-1);
+						String val2 = r2.getvalues().get(col2-1);
+						
+						if(val1.equals(val2)) {
+							System.out.println(r1.toString() + r2.toString());
+							totalRecordPrinted++;
+						}	
+					}
+				}
+				
+			}
+		}
+						
+		System.out.println("Total records : " + totalRecordPrinted);
+	
+	}
 	
 	
 	

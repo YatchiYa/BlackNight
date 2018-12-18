@@ -1,6 +1,5 @@
 package ManagerFolder;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -17,12 +16,8 @@ public class DiskManager {
 	 * @throws IOException
 	 */
 	public static void createFile(int iFileIdx) throws IOException {
-		try {
 			RandomAccessFile randomAccessFile = new RandomAccessFile(Constants.PATH+ iFileIdx +".rf", "rw");
 			randomAccessFile.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
 	}
 
 	/**
