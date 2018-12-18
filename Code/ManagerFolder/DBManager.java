@@ -7,10 +7,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import gestion.Commande;
+import shema.Bytemap;
 import shema.DBDef;
+import shema.HeaderPageInfo;
+import shema.PageId;
 import shema.Record;
 import shema.RelDef;
 import shema.RelDefShema;
@@ -96,27 +100,30 @@ public class DBManager{
 		BufferManager.flushAll();
 
 		File catalogDef = new File(Constants.catalogRep);
-		if(catalogDef.delete()) {
-			System.out.println("Suppression ... \"Catalog.def\" supprimé avec succès !");
-		}
-		else {
-			System.out.println("*** Aucun fichier \"Catalog.def\" présent ! ***\n");
+		try {
+			catalogDef.delete();
+			System.out.println("Suppression du fichier catalog.def ");
+			
+		}catch(Exception e) {
+			System.out.println(" le fichier catalog.def n'existe pas ");
+			e.printStackTrace();
 		}
 
 
 		for(int i = 0; i<FileManager.getListeHeapFile().size(); i++) {
-			File dataRf = new File("."+File.separatorChar+"DB"+File.separatorChar+"Data_"+i+".rf");
-			if(dataRf.delete()) {
-				System.out.println("Suppression ... Relation supprimée !");
+			File file = new File("."+File.separatorChar+"DB"+File.separatorChar+"Data_"+i+".rf");
+			try {
+				file.delete();
+				System.out.println("relation supprimé");
+			}catch(Exception e) {
+				System.out.println("probleme de suppression de la relation");
+				e.printStackTrace();
 			}
 		}
 
-
 		db.raz();
-
 		FileManager.setListeHeapFile(new ArrayList<HeapFile>(0));
-		
-		System.out.println("Suppression ... La base de données a été supprimée avec succès !\n");
+		System.out.println(" la base de donnée est supprimer !!! ");
 	}
 
 
@@ -139,17 +146,24 @@ public class DBManager{
 		
 		ArrayList<RelDef> listeDeRelation = db.getlistRelDef();
 		RelDef pointerRelation = null;
+		boolean check = false;
 		
 		for(int i = 0;i<listeDeRelation.size();i++) {
 			String nomDeRelation = listeDeRelation.get(i).getrelDef().getnomDeRelation();
 			if(nomRelation.equals(nomDeRelation)) {
 				pointerRelation = listeDeRelation.get(i);
+				check = true;
 				break;
 			}
 		}
 		
 		try {
-			fileManager.insertRecordInRelation(pointerRelation, record);
+			if(check) {
+				fileManager.insertRecordInRelation(pointerRelation, record);
+			}
+			else {
+				System.out.println("error ");
+			}
 			
 		}catch(Exception e) {
 			e.printStackTrace();
@@ -157,6 +171,114 @@ public class DBManager{
 		
 	}
 
+	
+	
+	
+
+	public static void affichageRecords(RelDef relDef) throws IOException {
+
+		int fileHeaderPage = relDef.getfileIdx();
+		int slotCpt = relDef.getslotCount();
+		int sizeOfRecord = relDef.getrecordSize();
+		int tot = 0;
+		
+		HeaderPageInfo headerPageInfo = new HeaderPageInfo();
+
+		HeapFileTreatment hfm = new HeapFileTreatment();
+		hfm.getHPI(headerPageInfo, relDef);
+		
+		ArrayList<Integer> listPage = headerPageInfo.getpageIdx();
+		
+		for(int i=0; i<listPage.size(); i++) {
+			int iPageC = listPage.get(i).intValue();
+			PageId pageC = new PageId(fileHeaderPage, iPageC); 
+
+
+			byte[] bufferPage = BufferManager.getPage(pageC);
+			
+			Bytemap bytemapPageC = new Bytemap();
+			int nombreDeSlot = relDef.getslotCount(); // = slotCount
+			
+			ByteBuffer buffer = ByteBuffer.wrap(bufferPage);
+
+
+			for(int j = 0; j<nombreDeSlot; j++) {
+				Byte indi = new Byte(buffer.get());
+				bytemapPageC.addindiceDuSlot(indi);
+			}
+			
+			ArrayList<Byte> indicePlageC = bytemapPageC.getIndiceDuSlot();
+			
+			for(int j = 0; j<indicePlageC.size(); j++) {
+				if(indicePlageC.get(j).byteValue() == (byte)1) {
+					int indicej = j;
+
+					Record recordAjoute = new Record();
+					recordAjoute = HeapFile.readRecordFromBuffer(bufferPage, slotCpt + indicej*sizeOfRecord);
+					System.out.println(recordAjoute.toString());
+					tot++;
+				}
+			}
+
+			BufferManager.freePage(pageC, 0);
+		}
+		System.out.println("records : " + tot);
+	}
+
+	
+	
+	public static void affichageRecordsAvecFiltre(RelDef relDef, int iIdxCol, String iValeur) throws IOException {
+
+		int fileHeaderPage = relDef.getfileIdx();
+		int slotCpt = relDef.getslotCount();
+		int sizeOfRecord = relDef.getrecordSize();
+		
+		int tot = 0;
+		
+		HeaderPageInfo headerPageInfo = new HeaderPageInfo();
+		HeapFileTreatment hfm = new HeapFileTreatment();
+		hfm.getHPI(headerPageInfo, relDef);
+		
+		ArrayList<Integer> listPage = headerPageInfo.getpageIdx();
+		
+		for(int i=0; i<listPage.size(); i++) {
+			int iPageC = listPage.get(i).intValue();
+			PageId pageC = new PageId(fileHeaderPage, iPageC); 
+
+
+			byte[] bufferPage = BufferManager.getPage(pageC);
+			
+			Bytemap bytemapPageC = new Bytemap();
+			int nombreDeSlot = relDef.getslotCount(); // = slotCount
+						
+			ByteBuffer buffer = ByteBuffer.wrap(bufferPage);
+
+
+			for(int j = 0; j<nombreDeSlot; j++) {
+				Byte indi = new Byte(buffer.get());
+				bytemapPageC.addindiceDuSlot(indi);
+			}
+			
+			ArrayList<Byte> indicePlageC = bytemapPageC.getIndiceDuSlot();
+			
+			for(int j = 0; j<indicePlageC.size(); j++) {
+				if(indicePlageC.get(j).byteValue() == (byte)1) {
+					int indicej = j;
+
+					Record recordAjoute = new Record();
+					recordAjoute = HeapFile.readRecordFromBuffer(bufferPage, slotCpt + indicej*sizeOfRecord);
+
+					if(recordAjoute.getvalues().get(iIdxCol-1).equals(iValeur)) {
+						System.out.println(recordAjoute.toString());
+						tot++;
+					}
+				}
+			}
+
+			BufferManager.freePage(pageC, 0);
+		}
+		System.out.println("records : " + tot);
+	}
 	
 	
 	public static Commande getCmd() {

@@ -25,30 +25,27 @@ public class Commande {
 		switch(action) {
 		
 		case "create":
-			System.out.println("create methode");
+			System.out.println(" Appel A la methode Create");
 			Create(c);
-			
-			
-			
 			break;
 		case "insert" : 
-			System.out.println("insert methode");
+			System.out.println("Appel A la methode insert");
 			inert(c);	
 			break;
 		case "selectall" : 
-			System.out.println("selectAll methode");
+			System.out.println("Appel A la methode selectAll");
 			selectAll(c);	
 			break;
 		case "clean" : 
-			System.out.println("clean methode");
+			System.out.println(" Appel A la methode clean");
 			clean(c);	
 		break;
 		case "select" : 
-			System.out.println("select methode");
+			System.out.println("Appel A la methode select");
 			select(c);	
 		break;
 		case "fill" : 
-			System.out.println("fill methode");
+			System.out.println("Appel A la methode fill ");
 			fill(c);
 		break;
 		default: 
@@ -103,80 +100,63 @@ public class Commande {
 	}
 	
 	
-		/**
-		 * 
-		 * @param command
-		 */
-	public static void select(String commande) {
-		
-		StringTokenizer st = new StringTokenizer(commande.substring(7), " ");
-		String nomRelation = st.nextToken();
-		int indiceCol = Integer.parseInt(st.nextToken());
-		String condition = st.nextToken();
-		
-		ArrayList<HeapFile> list = FileManager.getListeHeapFile();
-		HeapFile relFind = findHeapFile(list,nomRelation);
-		
-		if(relFind != null) {
-			try {
-				relFind.printAllRecordsWithFilter(indiceCol, condition);
-			}catch(IOException e) {
-				System.out.println("Une erreur s'est produite lors de l'affichage des records !");
-				System.out.println("Détails : " + e.getMessage());
-			}
-		}
-		else {
-			System.out.println("*** \"" +nomRelation + "\" n'existe pas dans la base de données ! ***\n");
-		}
-	}
 	
-
 	
 	
 
-	private static void fill(String command) {
+	private static void fill(String commande) throws IOException {
 		
-		StringTokenizer commande = new StringTokenizer(command.substring(5)," ");
-		String nomRel = commande.nextToken();
-		String nomFichier = commande.nextToken();
+		StringTokenizer commandx = new StringTokenizer(commande.substring(5)," ");
+		String nomDeRelation = commandx.nextToken();
+		String nomDuFichier = commandx.nextToken();
 		
 		ArrayList<String> contenuCSV = null;
 		
 		try {
-			contenuCSV = extractContenuCSV(nomFichier);
-			try{
-				extractRecords(contenuCSV,nomRel);
-			}catch(IOException e) {
-				System.out.println("Une erreur est survenue !");
-				System.out.println("Détails : " + e.getMessage());
-			}
-		}catch(IOException e) {
-			System.out.println("Une erreur est survenue !");
-			System.out.println("Détails : " + e.getMessage());
+			contenuCSV = new ArrayList<String>();
+			    try(
+				    	FileReader fileReader = new FileReader(Constants.CSVPATH + nomDuFichier);
+			    		BufferedReader bufferReader = new BufferedReader(fileReader))
+			    
+			    
+			    {
+			    	String line;
+			    	do{
+			    		line = bufferReader.readLine();
+			    		if(line != null) {
+			    			contenuCSV.add(line);
+			    		}
+			    	}while(line != null);
+			    }catch(IOException e) {
+			    	e.printStackTrace();
+			    }
+			    
+				try{
+					
+					for(int i = 0; i<contenuCSV.size(); i++) {
+						String line = contenuCSV.get(i);
+						StringTokenizer st = new StringTokenizer(line, ",");
+						
+						ArrayList<String> valeurs = new ArrayList<String>(0);
+						
+						while(st.hasMoreTokens()) {
+							valeurs.add(st.nextToken());
+						}
+						
+						DBManager.insert(nomDeRelation, valeurs);
+					}
+					
+				}catch(IOException e) {
+					e.printStackTrace();
+				}
+				
+		}catch(Exception e) {
+			e.printStackTrace();
 		}
 	}
 
 	
 	
-	
-	public static ArrayList<String> extractContenuCSV(String nomFichier) throws IOException{
-		
-		ArrayList<String> contenuCSV = new ArrayList<String>();
-        try(FileReader fr = new FileReader(Constants.CSVPATH + nomFichier);BufferedReader br = new BufferedReader(fr)){
-        	String ligne;
-        	do{
-        		ligne = br.readLine();
-        		if(ligne != null) {
-        			contenuCSV.add(ligne);
-        		}
-        	}while(ligne != null);
-        }catch(IOException e) {
-        	System.out.println("Problème de lecture : " + e.getMessage());
-        }
-        return contenuCSV;
-	}
-
-
 	
 	
 	
@@ -187,65 +167,73 @@ public class Commande {
 		try {
 			DBManager.clean();
 		}catch(Exception e) {
-			System.out.println("Une erreur est survenue lors de la suppression ! ");
-			System.out.println("Détails : " + e.getMessage());
+			e.printStackTrace();
 		}
 	}
 	
 	
-	public static void selectAll(String command) {
+	public static void selectAll(String commande) {
 		
-		String nomRelation = command.substring(10);
-		ArrayList<HeapFile> list = FileManager.getListeHeapFile();
-		HeapFile relFind = findHeapFile(list,nomRelation);
+		String nomDeLaRelation = commande.substring(10);
+		ArrayList<HeapFile> listHeapFile = FileManager.getListeHeapFile();
+		HeapFile iSrelation = null;
+						
+		for(int i =0 ;i<listHeapFile.size();i++) {
+			String nomRelationC = listHeapFile.get(i).getrelDef().getrelDef().getnomDeRelation();
+			HeapFile relationC = listHeapFile.get(i);
+			if(nomRelationC.equals(nomDeLaRelation)) {
+				iSrelation = relationC;
+			}
+		}
 		
-		if(relFind != null) {
+		if(iSrelation != null) {
 			try {
-				relFind.printAllRecords();
+				DBManager.affichageRecords(iSrelation.getrelDef());
 			}catch(IOException e) {
-				System.out.println("Une erreur s'est produite lors de l'affichage des records !");
-				System.out.println("Détails : " + e.getMessage());
+				e.printStackTrace();
 			}
 		}
 		else {
-			System.out.println("*** \"" +nomRelation + "\" n'existe pas dans la base de données ! ***\n");
+			System.out.println("ERROR");
 		}
 	}
 	
-
-	
-	
-	
-	public static void extractRecords(ArrayList<String> contenuCSV, String nomRel) throws IOException {
-		for(int i = 0; i<contenuCSV.size(); i++) {
-			String ligne = contenuCSV.get(i);
-			StringTokenizer st = new StringTokenizer(ligne, ",");
-			
-			ArrayList<String> listValeurs = new ArrayList<String>(0);
-			
-			while(st.hasMoreTokens()) {
-				listValeurs.add(st.nextToken());
-			}
-			
-			DBManager.insert(nomRel, listValeurs);
-		}
-	}
-	
-	public static HeapFile findHeapFile(ArrayList<HeapFile> list,String nomRelation) {
-		HeapFile relFind = null;
+	/**
+	 * 
+	 * @param command
+	 */
+	public static void select(String commande) {
 		
-		for(int i =0 ;i<list.size();i++) {
-			String nomRelCourant = list.get(i).getrelDef().getrelDef().getnomDeRelation();
-			HeapFile relCourant = list.get(i);
-			if(nomRelCourant.equals(nomRelation)) {
-				relFind = relCourant;
+		StringTokenizer st = new StringTokenizer(commande.substring(7), " ");
+		String nomDeLaRelation = st.nextToken();
+		int indiceCol = Integer.parseInt(st.nextToken());
+		String condition = st.nextToken();
+		
+		ArrayList<HeapFile> listHeapFile = FileManager.getListeHeapFile();
+		HeapFile iSrelation = null;
+						
+		for(int i =0 ;i<listHeapFile.size();i++) {
+			String nomRelationC = listHeapFile.get(i).getrelDef().getrelDef().getnomDeRelation();
+			HeapFile relationC = listHeapFile.get(i);
+			if(nomRelationC.equals(nomDeLaRelation)) {
+				iSrelation = relationC;
 			}
 		}
-		return relFind;
+		
+		if(iSrelation != null) {
+			try {
+				DBManager.affichageRecordsAvecFiltre(iSrelation.getrelDef(), indiceCol, condition);
+			}catch(IOException e) {
+				e.printStackTrace();
+			}
+		}
+		else {
+			System.out.println("ERROR");
+		}
 	}
-	
-	
-	
+
+
+		
 	
 	/**
 	 * 
