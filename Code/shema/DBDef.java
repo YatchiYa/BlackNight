@@ -6,13 +6,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import ManagerFolder.DBManager;
 import constants.Constants;
 
 
-public class DBDef{
+public class DBDef implements Serializable{
 
 	private ArrayList<RelDef> listRelDef;
 	private int cpt;
@@ -27,8 +28,11 @@ public class DBDef{
 		this(0);
 	}
 	
-	public void AddRelation(RelDef rd) {
-		this.listRelDef.add(rd);
+	public void AddRelation(RelDef r) {
+		listRelDef.add(r);
+		for(RelDef rx : listRelDef) {
+			System.out.println("33 rel def " + rx.getrelDef().getnomDeRelation());
+		}
 	}
 	
 	public void init() throws ClassNotFoundException, IOException {

@@ -1,13 +1,14 @@
 package shema;
 
+import java.io.Serializable;
 
-public class RelDef{
+public class RelDef implements Serializable{
 
 	private RelDefShema relDef;
 	private int fileIdx, recordSize, slotCount;
 	
-	public RelDef(RelDefShema relDef) {
-		this.relDef = relDef;
+	public RelDef(RelDefShema relDefx) {
+		this.relDef = relDefx;
 	}
 
 	public RelDefShema getrelDef() {
@@ -30,8 +31,8 @@ public class RelDef{
 		this.fileIdx = fileIdx;
 	}
 	
-	public void setrelDef(RelDefShema relDef) {
-		this.relDef = relDef;
+	public void setrelDef(RelDefShema relDefx) {
+		this.relDef = relDefx;
 	}
 	
 	public void setrecordSize(int recordSize) {

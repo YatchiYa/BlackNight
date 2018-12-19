@@ -14,12 +14,12 @@ import shema.Rid;
 
 public class HeapFile {
 	
-	private static RelDef relDef;
+	private RelDef relDef;
 	private HeaderPageInfo headerPageInfo;
 	
 	
 	public HeapFile(RelDef relDefx) {
-		relDef = relDefx;
+		this.relDef = relDefx;
 		this.headerPageInfo = new HeaderPageInfo();
 	}
 
@@ -37,15 +37,10 @@ public class HeapFile {
 	 */
 	public void createNewOnDisk() throws IOException {
 		
-		try {
-			DiskManager.createFile(relDef.getfileIdx());
-			System.out.println( "42 " + relDef.getfileIdx());
+			// DiskManager.createFile(relDef.getfileIdx());
 			DiskManager.addPage(relDef.getfileIdx());
-		}catch(IOException e) {
-			e.printStackTrace();
-		}
 		
-	
+		
 		int fileIdx = relDef.getfileIdx();
 		PageId hp = new PageId(fileIdx, 0);
 		
@@ -240,46 +235,45 @@ public class HeapFile {
  * @param iSlotIdx
  * @return
  */
-	public static Record readRecordFromBuffer(byte[] iBuffer,int iSlotIdx) {
-		Record record = new Record();
+	public void readRecordFromBuffer(Record record, byte[] iBuffer,int iSlotIdx) {
+		
 		
 		RelDefShema schema = relDef.getrelDef();
 		
-		ArrayList<String> typeCol = schema.gettypeDeColonne();
-		ArrayList<String> listVal = new ArrayList<String>();
+		ArrayList<String> typeDeColonne = schema.gettypeDeColonne();
+		ArrayList<String> listeDeValeurs = new ArrayList<String>();
 		
 		ByteBuffer buffer = ByteBuffer.wrap(iBuffer);
 		
 		buffer.position(iSlotIdx);
 		
-		for(int i = 0; i<typeCol.size(); i++) {
-			String type = typeCol.get(i);
+		for(int i = 0; i<typeDeColonne.size(); i++) {
+			String type = typeDeColonne.get(i);
 			
-			int valInt;
-			float valFloat;
-			StringBuffer valString = new StringBuffer();
+			int valToInt;
+			float valToFloat;
+			StringBuffer valToString = new StringBuffer();
 			
 			switch(type.toLowerCase()) {
 				case "int" : 
-					valInt = buffer.getInt();
-					listVal.add(String.valueOf(valInt));
+					valToInt = buffer.getInt();
+					listeDeValeurs.add(String.valueOf(valToInt));
 					break;
 				case "float" : 
-					valFloat = buffer.getFloat();
-					listVal.add(String.valueOf(valFloat));
+					valToFloat = buffer.getFloat();
+					listeDeValeurs.add(String.valueOf(valToFloat));
 					break;
 				default : 
 					int longueurString = Integer.parseInt(type.substring(6));
 
 					for(int j = 0; j<longueurString; j++) {
-						valString.append(buffer.getChar());
+						valToString.append(buffer.getChar());
 					}
-					listVal.add(valString.toString());
+					listeDeValeurs.add(valToString.toString());
 			}
 		}
-		record.setValue(listVal);
+		record.setValue(listeDeValeurs);
 		
-		return record;
 	}
 	
 	
@@ -289,7 +283,7 @@ public class HeapFile {
 	 * @return
 	 * @throws IOException
 	 */
-	public static ArrayList<Record> getRecordsOnPage(PageId iPageId) throws IOException {
+	public ArrayList<Record> getRecordsOnPage(PageId iPageId) throws IOException {
 		ArrayList<Record> listeDesRecords = new ArrayList<Record>(0);
 	
 		int slotCpt = relDef.getslotCount();
@@ -316,7 +310,7 @@ public class HeapFile {
 				int indicej = j;
 
 				Record recordAjoute = new Record(iPageId,slotCpt + indicej*sizeOfRecord);
-				recordAjoute = readRecordFromBuffer(bufferPage, slotCpt + indicej*sizeOfRecord);
+				readRecordFromBuffer(recordAjoute, bufferPage, slotCpt + indicej*sizeOfRecord);
 				listeDesRecords.add(recordAjoute);
 			}
 		}
@@ -352,16 +346,11 @@ public class HeapFile {
 	}
 
 
-	public static void setrelDef(RelDef relDefx) {
+	public void setrelDef(RelDef relDefx) {
 		relDef = relDefx;
 	}
 
 
-
-
-	public static void setRelDef(RelDef relDefx) {
-		relDef = relDefx;
-	}
 
 
 

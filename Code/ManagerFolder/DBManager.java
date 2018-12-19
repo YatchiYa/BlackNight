@@ -64,12 +64,15 @@ public class DBManager{
 
 		db.AddRelation(newRelDef);
 		db.incrCpt();
+		for(int i=0; i<db.getcpt(); i++) {
+			System.out.println(" db relation : " + db.getlistRelDef().get(i).getrelDef().getnomDeRelation());
+			
+		}
 		
 		try {
 			DiskManager.createFile(newRelDef.getfileIdx());
 		}catch(IOException e) {
-			System.out.println("*** Une ereur s'est produite lors de la création du fichier ! ***");
-			System.out.println("Détails : " + e.getMessage());
+			e.printStackTrace();
 		}
 		
 		try {
@@ -213,7 +216,8 @@ public class DBManager{
 					int indicej = j;
 
 					Record recordAjoute = new Record();
-					recordAjoute = HeapFile.readRecordFromBuffer(bufferPage, slotCpt + indicej*sizeOfRecord);
+					HeapFile hp = new HeapFile(relDef);
+					hp.readRecordFromBuffer(recordAjoute, bufferPage, slotCpt + indicej*sizeOfRecord);
 					System.out.println(recordAjoute.toString());
 					tot++;
 				}
@@ -264,7 +268,8 @@ public class DBManager{
 					int indicej = j;
 
 					Record recordAjoute = new Record();
-					recordAjoute = HeapFile.readRecordFromBuffer(bufferPage, slotCpt + indicej*sizeOfRecord);
+					HeapFile hp = new HeapFile(relDef);
+					hp.readRecordFromBuffer(recordAjoute, bufferPage, slotCpt + indicej*sizeOfRecord);
 
 					if(recordAjoute.getvalues().get(iIdxCol-1).equals(iValeur)) {
 						System.out.println(recordAjoute.toString());
