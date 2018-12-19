@@ -26,6 +26,10 @@ public class Commande {
 			System.out.println(" Appel A la methode Create");
 			Create(c);
 			break;
+		case "join":
+			System.out.println(" Appel A la methode join");
+			join(c);
+			break;
 		case "insert" : 
 			System.out.println("Appel A la methode insert");
 			inert(c);	
@@ -229,6 +233,57 @@ public class Commande {
 		else {
 			System.out.println("ERROR");
 		}
+	}
+
+
+	
+public static void join(String command) {
+		
+		StringTokenizer st = new StringTokenizer(command.substring(4), " ");
+		String nomRelation1 = st.nextToken();
+		String nomRelation2 = st.nextToken();
+		int indiceCol1 = Integer.parseInt(st.nextToken());
+		int indiceCol2 = Integer.parseInt(st.nextToken());
+		
+		//Recuperer la list des heapfile puis chercher le nom de la rel
+		ArrayList<HeapFile> list = FileManager.getListeHeapFile();
+		
+		
+		HeapFile relFind1 = null;
+				
+		for(int i =0 ;i<list.size();i++) {
+			String nomRelCourant = list.get(i).getrelDef().getrelDef().getnomDeRelation();
+			HeapFile relCourant = list.get(i);
+			if(nomRelCourant.equals(nomRelation1)) {
+				relFind1 = relCourant;
+			}
+		}
+
+
+		HeapFile relFind2 = null;
+		
+		for(int i =0 ;i<list.size();i++) {
+			String nomRelCourant = list.get(i).getrelDef().getrelDef().getnomDeRelation();
+			HeapFile relCourant = list.get(i);
+			if(nomRelCourant.equals(nomRelation2)) {
+				relFind2 = relCourant;
+			}
+		}
+		
+		if(relFind1 != null && relFind2 != null) {
+			try {
+				FileManager.join(relFind1,relFind2, indiceCol1, indiceCol2);
+				
+			}catch(IOException e) {
+				System.out.println("Une erreur s'est produite lors de la jointure !");
+				System.out.println("Détails : " + e.getMessage());
+			}
+			
+		}
+		else {
+			System.out.println("*** Une des 2 relations n'existe pas dans la base de données ! ***\n");
+		}
+		
 	}
 
 
